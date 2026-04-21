@@ -4,6 +4,9 @@ name: Daily TikTok Ads Report
 # to absorb GitHub Actions queue delays. Pulls yesterday's per-ad
 # metrics, commits the snapshot under .state/daily_snapshots/, and
 # posts a summary to Telegram. No auto-pause on daily data.
+#
+# Retrigger log:
+#   - bump 1: first live run after pipeline scaffold merged
 
 on:
   schedule:
