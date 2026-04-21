@@ -155,9 +155,17 @@ Always follow with eligibility honesty: "yours depends on your profile".
 
 Any ad-facing text (captions, hooks, headlines, video scripts, brainstorm drafts shared with user) MUST be run through the humanizer skill before presenting. Scope excludes code/commits/internal analysis/dev docs. See `.claude/skills/humanizer/SKILL.md`.
 
-## GSD Workflow Enforcement
+## Superpowers Workflow Enforcement
 
-Before Edit/Write tools, start through a GSD command. Entry points: `/gsd:quick` for small/ad-hoc, `/gsd:debug` for investigation, `/gsd:execute-phase` for planned work.
+Invoke relevant skills from `.claude/skills/` before acting — see `using-superpowers` skill for the invocation rules. Key process skills:
+
+- `brainstorming` — before any creative/design work (features, components, behavior changes)
+- `writing-plans` — when a spec exists and needs a multi-step plan
+- `test-driven-development` — before writing implementation code
+- `systematic-debugging` — any bug, test failure, or unexpected behavior
+- `verification-before-completion` — before claiming work done, committing, or opening a PR
+- `executing-plans` / `subagent-driven-development` — when running a written plan
+- `finishing-a-development-branch` — when implementation is complete and ready to integrate
 
 ## Cross-Reference — meta-ads-agent
 
@@ -172,4 +180,4 @@ Do NOT transfer: Meta API limits (CBO/ABO, dynamic creative, SGD $1.30 floor), s
 
 ## Developer Profile
 
-> Profile not yet configured. Run `/gsd:profile-user` to generate.
+> Profile not yet configured.
