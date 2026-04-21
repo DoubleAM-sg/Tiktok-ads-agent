@@ -1,10 +1,15 @@
 """One-shot mutation: exclude Pangle from ad group placements.
 
 Pangle is TikTok's third-party app network. On finance accounts it
-routinely spends on low-quality impressions that don't convert, so the
-default ``PLACEMENT_TYPE_AUTOMATIC`` (which includes Pangle) wastes
-budget. Switching the ad group to ``PLACEMENT_TYPE_NORMAL`` with an
-explicit placement list removes Pangle from eligibility.
+can burn budget on low-quality impressions, so the default
+``PLACEMENT_TYPE_AUTOMATIC`` (which includes Pangle) can waste spend.
+Switching the ad group to ``PLACEMENT_TYPE_NORMAL`` with an explicit
+placement list removes Pangle from eligibility.
+
+Smart+ / Upgraded Smart Plus ad groups reject this update via the
+Marketing API (TikTok manages placements automatically there). We
+detect that response and record it as a ``skipped_smart_plus`` result
+instead of treating it as a failure.
 
 This module is idempotent — it skips ad groups already on a manual
 placement that doesn't include ``PLACEMENT_PANGLE``.
@@ -22,11 +27,14 @@ from tiktok_ads_agent.models.schemas import AdGroupMetadata
 # the TikTok app and is what we actually want for a finance audience.
 KEEP_PLACEMENTS = ["PLACEMENT_TIKTOK"]
 
+SMART_PLUS_MARKERS = ("smart plus", "smart+", "upgraded smart")
+
 
 class PlacementUpdateResult(NamedTuple):
     adgroup_id: str
     adgroup_name: str
-    action: str  # "updated" | "already_correct" | "skipped" | "failed"
+    # "updated" | "already_correct" | "skipped_smart_plus" | "failed"
+    action: str
     detail: str
 
 
@@ -83,11 +91,13 @@ def exclude_pangle(
                 placements=KEEP_PLACEMENTS,
             )
         except TikTokAPIError as err:
+            lowered = err.message.lower()
+            is_smart_plus = any(marker in lowered for marker in SMART_PLUS_MARKERS)
             results.append(
                 PlacementUpdateResult(
                     adgroup_id=group.adgroup_id,
                     adgroup_name=name,
-                    action="failed",
+                    action="skipped_smart_plus" if is_smart_plus else "failed",
                     detail=str(err),
                 )
             )
@@ -111,16 +121,20 @@ def format_telegram_summary(results: list[PlacementUpdateResult]) -> str:
 
     updated = [r for r in results if r.action == "updated"]
     skipped = [r for r in results if r.action == "already_correct"]
+    smart_plus = [r for r in results if r.action == "skipped_smart_plus"]
     failed = [r for r in results if r.action == "failed"]
 
     lines = [
         f"🛠 Pangle exclusion run — {len(results)} ad group(s) checked",
         f"  ✓ updated: {len(updated)}",
         f"  ⏭ already correct: {len(skipped)}",
+        f"  🤖 Smart+ (placement managed by TikTok): {len(smart_plus)}",
         f"  ✗ failed: {len(failed)}",
     ]
     for r in updated:
         lines.append(f"    · {r.adgroup_name} → TikTok-only")
+    for r in smart_plus:
+        lines.append(f"    · {r.adgroup_name} — Smart+, no manual placement")
     for r in failed:
         lines.append(f"    · {r.adgroup_name} FAILED: {r.detail}")
     return "\n".join(lines)
