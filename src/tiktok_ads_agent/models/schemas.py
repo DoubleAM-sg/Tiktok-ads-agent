@@ -40,15 +40,14 @@ class AdGroupMetadata(BaseModel):
     optimization_goal: str | None = None
     optimization_event: str | None = None
     secondary_optimization_event: str | None = None
-    external_action: str | None = None
-    external_type: str | None = None
     conversion_id: str | None = None
+    custom_conversion_id: str | None = None
     billing_event: str | None = None
     pixel_id: str | None = None
     budget: float | None = None
     budget_mode: str | None = None
     placement_type: str | None = None
-    placement: list[str] = Field(default_factory=list)
+    placements: list[str] = Field(default_factory=list)
     bid_type: str | None = None
     bid_price: float | None = None
     conversion_bid_price: float | None = None
