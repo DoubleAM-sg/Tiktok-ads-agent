@@ -1,0 +1,119 @@
+{
+  "cadence": "monthly",
+  "period_id": "2026-03",
+  "start_date": "2026-03-01",
+  "end_date": "2026-03-31",
+  "generated_at": "2026-04-21T14:55:26+00:00",
+  "advertiser_id": "7624416803980345360",
+  "campaigns": [
+    {
+      "campaign_id": "1861430061161953",
+      "campaign_name": "Leads-Lookalike-before 1jan2025 rejected",
+      "operation_status": "ENABLE",
+      "objective_type": "LEAD_GENERATION",
+      "budget": 20.0,
+      "budget_mode": "BUDGET_MODE_DYNAMIC_DAILY_BUDGET"
+    }
+  ],
+  "adgroups": [
+    {
+      "adgroup_id": "1861430108768257",
+      "adgroup_name": "Leads-Lookalike-before 1jan2025 rejected",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "optimization_goal": "CONVERT",
+      "optimization_event": null,
+      "secondary_optimization_event": null,
+      "billing_event": "OCPM",
+      "pixel_id": "7624420828901376018",
+      "budget": 0.0,
+      "budget_mode": "BUDGET_MODE_INFINITE",
+      "placement_type": "PLACEMENT_TYPE_AUTOMATIC"
+    }
+  ],
+  "ads": [
+    {
+      "ad_id": "1862715093286945",
+      "ad_name": "POV: The bank just rejected your loan and you don't know what to do 😬 This is what most people don't know — there's a smarter backup plan. Watch till the end. No sales calls. No pressure. Free to use. Rates from 1.88% (T&Cs apply). Don't say never tell you 🤷 #personalloan #singapore #sgmoney #moneytok #financetok #loansg #foryou #fyp #sgfyp #adultingsg",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "create_time": "2026-04-17 10:59:07"
+    },
+    {
+      "ad_id": "1861694072293442",
+      "ad_name": "Wait — you can get cashback on a personal loan now?? 👀 PickMeALoan just launched rewards on every successful loan. $50 minimum or 1% back. Borrow $20K, get $200 back. Redeem at Grab, Shopee, FairPrice, Lazada 🛒 Free to use. No catch. #cashback #personalloan #singapore #moneytok #financetok #sgmoney #fyp #foryou #sgfyp #lifehacksg",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "create_time": "2026-04-06 04:30:28"
+    },
+    {
+      "ad_id": "1861694072282658",
+      "ad_name": "Bank rejected their loan. Here's what they did next 👇 Applied on PickMeALoan → Got offers on WhatsApp → Collected cash in 1 hour via PayNow 🤯 No sales calls. Free to use. #personalloan #singapore #moneytok #financetok #sgmoney #fyp #foryou #sgfyp #storytime",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "create_time": "2026-04-06 04:30:28"
+    }
+  ],
+  "metrics": [
+    {
+      "ad_id": "1862715093286945",
+      "spend": 0.0,
+      "impressions": 0,
+      "clicks": 0,
+      "ctr": 0.0,
+      "cpc": 0.0,
+      "cpm": 0.0,
+      "conversion": 0,
+      "cost_per_conversion": null,
+      "conversion_rate": 0.0,
+      "video_play_actions": 0,
+      "video_watched_2s": 0,
+      "video_watched_6s": 0,
+      "video_views_p25": 0,
+      "video_views_p50": 0,
+      "video_views_p75": 0,
+      "video_views_p100": 0
+    },
+    {
+      "ad_id": "1861694072282658",
+      "spend": 0.0,
+      "impressions": 0,
+      "clicks": 0,
+      "ctr": 0.0,
+      "cpc": 0.0,
+      "cpm": 0.0,
+      "conversion": 0,
+      "cost_per_conversion": null,
+      "conversion_rate": 0.0,
+      "video_play_actions": 0,
+      "video_watched_2s": 0,
+      "video_watched_6s": 0,
+      "video_views_p25": 0,
+      "video_views_p50": 0,
+      "video_views_p75": 0,
+      "video_views_p100": 0
+    },
+    {
+      "ad_id": "1861694072293442",
+      "spend": 0.0,
+      "impressions": 0,
+      "clicks": 0,
+      "ctr": 0.0,
+      "cpc": 0.0,
+      "cpm": 0.0,
+      "conversion": 0,
+      "cost_per_conversion": null,
+      "conversion_rate": 0.0,
+      "video_play_actions": 0,
+      "video_watched_2s": 0,
+      "video_watched_6s": 0,
+      "video_views_p25": 0,
+      "video_views_p50": 0,
+      "video_views_p75": 0,
+      "video_views_p100": 0
+    }
+  ]
+}
