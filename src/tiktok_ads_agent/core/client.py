@@ -69,7 +69,11 @@ class TikTokClient:
         return payload
 
     def get_advertiser_info(self) -> dict[str, Any]:
-        """Fetch advertiser metadata for the configured advertiser ID."""
+        """Fetch advertiser metadata for the configured advertiser ID.
+
+        Requires "Ad Account Management" scope. If the token lacks it,
+        prefer :meth:`list_campaigns` for a health probe.
+        """
 
         params = {
             "advertiser_ids": json.dumps([self.settings.tiktok_advertiser_id]),
@@ -85,3 +89,30 @@ class TikTokClient:
                 message=f"no advertiser found for id {self.settings.tiktok_advertiser_id}",
             )
         return rows[0]
+
+    def list_campaigns(self, page_size: int = 1) -> dict[str, Any]:
+        """List campaigns under the configured advertiser.
+
+        Used as the health probe since "Ads Management" scope is granted
+        by the default OAuth consent and also covers the endpoints weekly
+        CPA ranking will call.
+        """
+
+        params = {
+            "advertiser_id": self.settings.tiktok_advertiser_id,
+            "page": 1,
+            "page_size": page_size,
+            "fields": json.dumps(
+                [
+                    "campaign_id",
+                    "campaign_name",
+                    "operation_status",
+                    "objective_type",
+                    "budget",
+                    "budget_mode",
+                ]
+            ),
+        }
+        payload = self._request("GET", "/campaign/get/", params=params)
+        data: dict[str, Any] = payload["data"]
+        return data

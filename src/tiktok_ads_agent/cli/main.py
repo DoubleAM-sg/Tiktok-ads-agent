@@ -29,7 +29,12 @@ def status() -> None:
 
 @cli.command()
 def health() -> None:
-    """Probe the TikTok access token by fetching advertiser info.
+    """Probe the TikTok access token by listing campaigns.
+
+    Uses ``/campaign/get/`` (Ads Management scope) rather than
+    ``/advertiser/info/`` (Ad Account Management) because the former is
+    granted by the default OAuth consent and also exercises the scope
+    the weekly CPA ranking will depend on.
 
     Prints ``healthy: ...`` and exits 0 on success, ``expired: ...`` and
     exits 1 if the API rejects the token, or ``error: ...`` and exits 1
@@ -40,15 +45,18 @@ def health() -> None:
     settings = load_settings()
     client = TikTokClient(settings)
     try:
-        info = client.get_advertiser_info()
+        data = client.list_campaigns(page_size=1)
     except TikTokAPIError as err:
         label = "expired" if err.is_expired_token else "error"
         console.print(f"{label}: {err}")
         sys.exit(1)
+    page_info = data.get("page_info", {})
+    total = page_info.get("total_number", 0)
+    first = (data.get("list") or [{}])[0]
     console.print(
-        f"healthy: advertiser {info.get('advertiser_id')} '{info.get('name')}' "
-        f"status={info.get('status')} currency={info.get('currency')} "
-        f"timezone={info.get('timezone')} country={info.get('country')}"
+        f"healthy: advertiser {settings.tiktok_advertiser_id} has {total} campaigns "
+        f"(first: {first.get('campaign_name') or '<none>'} "
+        f"status={first.get('operation_status') or '-'})"
     )
 
 
