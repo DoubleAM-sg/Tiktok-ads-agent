@@ -22,7 +22,8 @@ Scaffolded from meta-ads-agent patterns. Before live operation:
 
 ## Technology Stack
 
-- Python 3.11+, FastAPI, Click, Uvicorn, Pydantic v2, pydantic-settings, Anthropic SDK, Rich, pytest, ruff, mypy (strict)
+- Python 3.11+, FastAPI, Click, Uvicorn, Pydantic v2, pydantic-settings, Rich, pytest, ruff, mypy (strict)
+- Execution model: GitHub Actions workflows (scheduled + merge-triggered). No standalone chat UI / Anthropic SDK — strategic reasoning happens in Claude Code sessions; workflows run deterministic Python (data pulls, reports, pause/activate, Telegram posts).
 - `tiktok-business-api-sdk` as the primary TikTok Marketing API client
 - Entry point: `tiktok-ads` CLI → `src/tiktok_ads_agent/cli/main.py`
 
@@ -32,7 +33,7 @@ Same as meta-ads-agent: snake_case modules/functions/vars, PascalCase classes, A
 
 ## Architecture
 
-Mirrors meta-ads-agent. Layers: `core` (client + settings), `models` (pydantic schemas), `api` (FastAPI routers), `cli` (Click), `agent` (Anthropic chat + tools), `reports` (daily/weekly/monthly), `creative` (Corey Haines analysis), `notifications` (Telegram), `state` (JSON persistence).
+Mirrors meta-ads-agent. Layers: `core` (client + settings), `models` (pydantic schemas), `api` (FastAPI routers), `cli` (Click), `reports` (daily/weekly/monthly), `creative` (Corey Haines analysis), `notifications` (Telegram), `state` (JSON persistence). Workflows under `.github/workflows/` invoke the CLI on schedule and post results to Telegram.
 
 ### TikTok vs Meta Terminology Map
 
@@ -155,9 +156,17 @@ Always follow with eligibility honesty: "yours depends on your profile".
 
 Any ad-facing text (captions, hooks, headlines, video scripts, brainstorm drafts shared with user) MUST be run through the humanizer skill before presenting. Scope excludes code/commits/internal analysis/dev docs. See `.claude/skills/humanizer/SKILL.md`.
 
-## GSD Workflow Enforcement
+## Superpowers Workflow Enforcement
 
-Before Edit/Write tools, start through a GSD command. Entry points: `/gsd:quick` for small/ad-hoc, `/gsd:debug` for investigation, `/gsd:execute-phase` for planned work.
+Invoke relevant skills from `.claude/skills/` before acting — see `using-superpowers` skill for the invocation rules. Key process skills:
+
+- `brainstorming` — before any creative/design work (features, components, behavior changes)
+- `writing-plans` — when a spec exists and needs a multi-step plan
+- `test-driven-development` — before writing implementation code
+- `systematic-debugging` — any bug, test failure, or unexpected behavior
+- `verification-before-completion` — before claiming work done, committing, or opening a PR
+- `executing-plans` / `subagent-driven-development` — when running a written plan
+- `finishing-a-development-branch` — when implementation is complete and ready to integrate
 
 ## Cross-Reference — meta-ads-agent
 
@@ -172,4 +181,4 @@ Do NOT transfer: Meta API limits (CBO/ABO, dynamic creative, SGD $1.30 floor), s
 
 ## Developer Profile
 
-> Profile not yet configured. Run `/gsd:profile-user` to generate.
+> Profile not yet configured.
