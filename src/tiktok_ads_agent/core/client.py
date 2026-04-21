@@ -116,3 +116,102 @@ class TikTokClient:
         payload = self._request("GET", "/campaign/get/", params=params)
         data: dict[str, Any] = payload["data"]
         return data
+
+    def list_ads(self, page_size: int = 200) -> list[dict[str, Any]]:
+        """List all ads (paged). Returns the flattened ``list`` array.
+
+        Pages through ``/ad/get/`` until exhausted. Fields selected are
+        what the cadence reports need for name + hierarchy mapping.
+        """
+
+        fields = [
+            "ad_id",
+            "ad_name",
+            "adgroup_id",
+            "campaign_id",
+            "operation_status",
+            "create_time",
+            "modify_time",
+        ]
+        all_rows: list[dict[str, Any]] = []
+        page = 1
+        while True:
+            params = {
+                "advertiser_id": self.settings.tiktok_advertiser_id,
+                "page": page,
+                "page_size": page_size,
+                "fields": json.dumps(fields),
+            }
+            payload = self._request("GET", "/ad/get/", params=params)
+            data = payload["data"]
+            all_rows.extend(data.get("list", []))
+            page_info = data.get("page_info", {})
+            if page >= int(page_info.get("total_page", 1)):
+                break
+            page += 1
+        return all_rows
+
+    def list_adgroups(self, page_size: int = 50) -> dict[str, Any]:
+        """List ad groups — exposes ``optimization_event`` + ``pixel_id``.
+
+        This is where TikTok stores which pixel event a campaign is
+        optimizing for, which is the cleanest way to answer "what do our
+        conversions refer to".
+        """
+
+        params = {
+            "advertiser_id": self.settings.tiktok_advertiser_id,
+            "page": 1,
+            "page_size": page_size,
+            "fields": json.dumps(
+                [
+                    "adgroup_id",
+                    "adgroup_name",
+                    "campaign_id",
+                    "operation_status",
+                    "optimization_goal",
+                    "optimization_event",
+                    "pixel_id",
+                    "secondary_optimization_event",
+                    "billing_event",
+                    "budget",
+                    "budget_mode",
+                    "placement_type",
+                ]
+            ),
+        }
+        payload = self._request("GET", "/adgroup/get/", params=params)
+        data: dict[str, Any] = payload["data"]
+        return data
+
+    def get_basic_report(
+        self,
+        *,
+        data_level: str,
+        dimensions: list[str],
+        metrics: list[str],
+        start_date: str,
+        end_date: str,
+        page_size: int = 100,
+    ) -> dict[str, Any]:
+        """Pull an aggregated synchronous report.
+
+        ``data_level`` is one of AUCTION_ADVERTISER | AUCTION_CAMPAIGN |
+        AUCTION_ADGROUP | AUCTION_AD. Dates are YYYY-MM-DD in the
+        advertiser's timezone.
+        """
+
+        params = {
+            "advertiser_id": self.settings.tiktok_advertiser_id,
+            "report_type": "BASIC",
+            "data_level": data_level,
+            "dimensions": json.dumps(dimensions),
+            "metrics": json.dumps(metrics),
+            "start_date": start_date,
+            "end_date": end_date,
+            "page": 1,
+            "page_size": page_size,
+        }
+        payload = self._request("GET", "/report/integrated/get/", params=params)
+        data: dict[str, Any] = payload["data"]
+        return data

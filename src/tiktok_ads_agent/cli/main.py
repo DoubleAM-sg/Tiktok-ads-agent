@@ -10,6 +10,10 @@ from rich.console import Console
 from tiktok_ads_agent.core.client import TikTokAPIError, TikTokClient
 from tiktok_ads_agent.core.settings import load_settings
 from tiktok_ads_agent.notifications.telegram import send_message
+from tiktok_ads_agent.reports import daily as daily_report
+from tiktok_ads_agent.reports import monthly as monthly_report
+from tiktok_ads_agent.reports import weekly as weekly_report
+from tiktok_ads_agent.state.persistence import init_state
 
 console = Console()
 
@@ -67,6 +71,66 @@ def notify(message: str) -> None:
 
     send_message(message)
     console.print("sent")
+
+
+@cli.group()
+def state() -> None:
+    """Persistent state helpers."""
+
+
+@state.command("init")
+def state_init() -> None:
+    """Create ``.state/`` directory tree + empty cumulative JSON files."""
+
+    created = init_state()
+    if created:
+        for path in created:
+            console.print(f"created {path}")
+    else:
+        console.print("state already initialised")
+
+
+@cli.group()
+def report() -> None:
+    """Daily, weekly, monthly cadence reports."""
+
+
+def _run_and_notify(cadence: str) -> None:
+    settings = load_settings()
+    runner = {
+        "daily": daily_report.run,
+        "weekly": weekly_report.run,
+        "monthly": monthly_report.run,
+    }[cadence]
+    try:
+        snapshot, message = runner(settings)
+    except TikTokAPIError as err:
+        label = "expired" if err.is_expired_token else "error"
+        console.print(f"{label}: {err}")
+        sys.exit(1)
+    send_message(message)
+    console.print(f"{cadence} report sent — snapshot {snapshot.period_id}")
+
+
+@report.command("daily")
+def report_daily() -> None:
+    """Run yesterday's daily report and post to Telegram."""
+
+    _run_and_notify("daily")
+
+
+@report.command("weekly")
+def report_weekly() -> None:
+    """Run last complete ISO week's report and post to Telegram."""
+
+    _run_and_notify("weekly")
+
+
+@report.command("monthly")
+def report_monthly() -> None:
+    """Run previous calendar month's report and post to Telegram."""
+
+    _run_and_notify("monthly")
 
 
 if __name__ == "__main__":
