@@ -1,0 +1,96 @@
+name: Exclude Pangle from Ad Groups
+
+# One-shot mutation workflow. Fires on push to main whenever this file
+# changes (bump the comment block to re-run) and also on manual dispatch.
+# Idempotent: ad groups already on manual placement without Pangle are
+# skipped, so repeated merges don't cause harm.
+#
+# Keeps the file around (not deleted after running) so future ad groups
+# created via Ads Manager can inherit the exclusion by bumping this log.
+#
+# Run log:
+#   - bump 1: initial Pangle exclusion across all active ad groups
+
+on:
+  workflow_dispatch:
+    inputs:
+      adgroup_id:
+        description: "Limit to one ad group ID (optional)"
+        required: false
+        type: string
+        default: ""
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/exclude-pangle.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  exclude-pangle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    env:
+      TIKTOK_APP_ID: ${{ secrets.TIKTOK_APP_ID }}
+      TIKTOK_APP_SECRET: ${{ secrets.TIKTOK_APP_SECRET }}
+      TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+      TIKTOK_ADVERTISER_ID: ${{ secrets.TIKTOK_ADVERTISER_ID }}
+      TIKTOK_SANDBOX: ${{ secrets.TIKTOK_SANDBOX }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TELEGRAM_TOPIC_ID: ${{ secrets.TELEGRAM_TOPIC_ID }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Exclude Pangle
+        run: |
+          if [ -n "${{ inputs.adgroup_id }}" ]; then
+            tiktok-ads adgroup exclude-pangle --adgroup-id "${{ inputs.adgroup_id }}"
+          else
+            tiktok-ads adgroup exclude-pangle
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          token = os.environ["TELEGRAM_BOT_TOKEN"]
+          chat_id = os.environ["TELEGRAM_CHAT_ID"]
+          topic_id = os.environ.get("TELEGRAM_TOPIC_ID", "")
+          run_id = os.environ.get("GITHUB_RUN_ID", "?")
+          repo = os.environ.get("GITHUB_REPOSITORY", "")
+          server = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
+          body = {
+              "chat_id": chat_id,
+              "text": (
+                  f"Pangle exclusion ✗ FAILED — run {run_id}. "
+                  f"Logs: {server}/{repo}/actions/runs/{run_id}"
+              ),
+          }
+          if topic_id:
+              body["message_thread_id"] = int(topic_id)
+          req = urllib.request.Request(
+              f"https://api.telegram.org/bot{token}/sendMessage",
+              data=json.dumps(body).encode(),
+              headers={"Content-Type": "application/json"},
+              method="POST",
+          )
+          with urllib.request.urlopen(req, timeout=15) as resp:  # noqa: S310
+              print(resp.status, resp.read()[:200])
+          PY

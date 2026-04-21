@@ -56,11 +56,22 @@ def _delta_line(label: str, curr: float, prev: float | None, *, as_int: bool = F
     return f"{label}: {curr:.2f} vs {prev:.2f} ({pct})"
 
 
+def _fatigue_summary(snapshot: Snapshot) -> tuple[int, float, int]:
+    """Return (fatigued_ad_count, avg_weighted_frequency, total_reach)."""
+
+    rows = [m for m in snapshot.metrics if m.spend > 0]
+    fatigued = sum(1 for m in rows if m.is_fatigued)
+    total_reach = sum(m.reach for m in rows)
+    weighted_freq = sum(m.frequency * m.reach for m in rows) / total_reach if total_reach else 0.0
+    return fatigued, round(weighted_freq, 2), total_reach
+
+
 def build_telegram_summary(current: Snapshot, previous: Snapshot | None) -> str:
     """Format a plain-text Telegram message for a monthly snapshot + MoM."""
 
     c = totals(current)
     p = totals(previous) if previous else None
+    c_fatigued, c_freq, c_reach = _fatigue_summary(current)
 
     lines: list[str] = []
     lines.append(
@@ -79,6 +90,15 @@ def build_telegram_summary(current: Snapshot, previous: Snapshot | None) -> str:
     )
     lines.append(_delta_line("CPA", c["cpa"], p["cpa"] if p else None))
     lines.append(_delta_line("CTR %", c["ctr"], p["ctr"] if p else None))
+
+    if previous is not None:
+        _, p_freq, _ = _fatigue_summary(previous)
+        lines.append(_delta_line("Avg frequency", c_freq, p_freq))
+    else:
+        lines.append(f"Avg frequency: {c_freq:.2f} (no prior month)")
+
+    lines.append(f"Unique reach: {c_reach:,} · fatigued ads (freq ≥ 3): {c_fatigued}")
+
     lines.append("")
     lines.append(f"Snapshot: .state/monthly_snapshots/{current.period_id}.json")
     if previous is None:

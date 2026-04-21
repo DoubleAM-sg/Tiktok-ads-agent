@@ -13,6 +13,10 @@ from tiktok_ads_agent.notifications.telegram import send_message
 from tiktok_ads_agent.reports import daily as daily_report
 from tiktok_ads_agent.reports import monthly as monthly_report
 from tiktok_ads_agent.reports import weekly as weekly_report
+from tiktok_ads_agent.reports.placements import (
+    exclude_pangle,
+    format_telegram_summary,
+)
 from tiktok_ads_agent.state.persistence import init_state
 
 console = Console()
@@ -131,6 +135,43 @@ def report_monthly() -> None:
     """Run previous calendar month's report and post to Telegram."""
 
     _run_and_notify("monthly")
+
+
+@cli.group()
+def adgroup() -> None:
+    """Ad group mutations (pause, resume, placement, etc.)."""
+
+
+@adgroup.command("exclude-pangle")
+@click.option(
+    "--adgroup-id",
+    default=None,
+    help="Limit to one ad group. Default: every active ad group.",
+)
+@click.option(
+    "--no-telegram",
+    is_flag=True,
+    default=False,
+    help="Skip the Telegram summary post (local dry runs).",
+)
+def adgroup_exclude_pangle(adgroup_id: str | None, no_telegram: bool) -> None:
+    """Switch ad groups off automatic placement to drop Pangle.
+
+    Idempotent — ad groups already on a manual placement without
+    ``PLACEMENT_PANGLE`` are skipped.
+    """
+
+    settings = load_settings()
+    try:
+        results = exclude_pangle(settings, adgroup_id=adgroup_id)
+    except TikTokAPIError as err:
+        label = "expired" if err.is_expired_token else "error"
+        console.print(f"{label}: {err}")
+        sys.exit(1)
+    message = format_telegram_summary(results)
+    console.print(message)
+    if not no_telegram:
+        send_message(message)
 
 
 if __name__ == "__main__":
