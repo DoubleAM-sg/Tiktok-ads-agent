@@ -1,0 +1,60 @@
+name: Send Telegram Notification
+
+# Ad-hoc dispatch that takes a committed .state/ text file and posts
+# its contents to Telegram. Useful for replaying a snapshot summary or
+# sending a narrative after optimization one-shots commit their output.
+
+on:
+  workflow_dispatch:
+    inputs:
+      file:
+        description: "Path (relative to repo root) of the file to send"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    env:
+      TIKTOK_APP_ID: ${{ secrets.TIKTOK_APP_ID }}
+      TIKTOK_APP_SECRET: ${{ secrets.TIKTOK_APP_SECRET }}
+      TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+      TIKTOK_ADVERTISER_ID: ${{ secrets.TIKTOK_ADVERTISER_ID }}
+      TIKTOK_SANDBOX: ${{ secrets.TIKTOK_SANDBOX }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TELEGRAM_TOPIC_ID: ${{ secrets.TELEGRAM_TOPIC_ID }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Send file
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          from tiktok_ads_agent.notifications.telegram import send_message
+
+          path = Path("${{ inputs.file }}")
+          if not path.exists():
+              raise SystemExit(f"file not found: {path}")
+          text = path.read_text().rstrip()
+          if not text:
+              raise SystemExit(f"file is empty: {path}")
+          send_message(text)
+          print(f"sent {len(text)} chars from {path}")
+          PY

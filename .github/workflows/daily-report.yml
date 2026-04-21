@@ -1,0 +1,111 @@
+name: Daily TikTok Ads Report
+
+# Runs every day at 05:00 SGT (21:00 UTC previous day) — shifted early
+# to absorb GitHub Actions queue delays. Pulls yesterday's per-ad
+# metrics, commits the snapshot under .state/daily_snapshots/, and
+# posts a summary to Telegram. No auto-pause on daily data.
+
+on:
+  schedule:
+    - cron: "0 21 * * *"
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/daily-report.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  daily-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      TIKTOK_APP_ID: ${{ secrets.TIKTOK_APP_ID }}
+      TIKTOK_APP_SECRET: ${{ secrets.TIKTOK_APP_SECRET }}
+      TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+      TIKTOK_ADVERTISER_ID: ${{ secrets.TIKTOK_ADVERTISER_ID }}
+      TIKTOK_SANDBOX: ${{ secrets.TIKTOK_SANDBOX }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TELEGRAM_TOPIC_ID: ${{ secrets.TELEGRAM_TOPIC_ID }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Initialise state directory
+        run: tiktok-ads state init
+
+      - name: Token health
+        id: health
+        run: |
+          OUTPUT=$(tiktok-ads health 2>&1) || true
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -q "expired"; then
+            tiktok-ads notify "Daily report SKIPPED: token expired. Renew TIKTOK_ACCESS_TOKEN."
+            echo "status=expired" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=healthy" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run daily report
+        if: steps.health.outputs.status != 'expired'
+        run: tiktok-ads report daily
+
+      - name: Persist state to repo
+        if: always()
+        run: |
+          git config user.name "tiktok-ads-bot"
+          git config user.email "tiktok-ads-bot@github-actions"
+          git add .state/ || true
+          if git diff --cached --quiet; then
+            echo "No state changes to commit"
+          else
+            git commit -m "state: daily report $(date -u +%Y-%m-%d)"
+            git pull --rebase --autostash origin main
+            git push origin main
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          token = os.environ["TELEGRAM_BOT_TOKEN"]
+          chat_id = os.environ["TELEGRAM_CHAT_ID"]
+          topic_id = os.environ.get("TELEGRAM_TOPIC_ID", "")
+          run_id = os.environ.get("GITHUB_RUN_ID", "?")
+          repo = os.environ.get("GITHUB_REPOSITORY", "")
+          server = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
+          body = {
+              "chat_id": chat_id,
+              "text": (
+                  f"Daily report ✗ FAILED — run {run_id}. "
+                  f"Logs: {server}/{repo}/actions/runs/{run_id}"
+              ),
+          }
+          if topic_id:
+              body["message_thread_id"] = int(topic_id)
+          req = urllib.request.Request(
+              f"https://api.telegram.org/bot{token}/sendMessage",
+              data=json.dumps(body).encode(),
+              headers={"Content-Type": "application/json"},
+              method="POST",
+          )
+          with urllib.request.urlopen(req, timeout=15) as resp:  # noqa: S310
+              print(resp.status, resp.read()[:200])
+          PY
