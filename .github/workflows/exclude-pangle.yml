@@ -10,6 +10,8 @@ name: Exclude Pangle from Ad Groups
 #
 # Run log:
 #   - bump 1: initial Pangle exclusion across all active ad groups
+#   - bump 2: fix /adgroup/get/ field list (placements plural; drop
+#     external_action / external_type; add custom_conversion_id)
 
 on:
   workflow_dispatch:

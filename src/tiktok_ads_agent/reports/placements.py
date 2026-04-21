@@ -35,7 +35,7 @@ def _needs_update(adgroup: AdGroupMetadata) -> bool:
 
     if (adgroup.placement_type or "") != "PLACEMENT_TYPE_NORMAL":
         return True
-    if "PLACEMENT_PANGLE" in (adgroup.placement or []):
+    if "PLACEMENT_PANGLE" in (adgroup.placements or []):
         return True
     # Normal + non-Pangle list already — leave alone regardless of which
     # placements are in it (user may have intentionally added more).
@@ -73,7 +73,7 @@ def exclude_pangle(
                     adgroup_id=group.adgroup_id,
                     adgroup_name=name,
                     action="already_correct",
-                    detail=(f"placement_type={group.placement_type} placement={group.placement}"),
+                    detail=(f"placement_type={group.placement_type} placements={group.placements}"),
                 )
             )
             continue

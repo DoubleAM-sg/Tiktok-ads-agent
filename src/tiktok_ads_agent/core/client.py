@@ -172,15 +172,14 @@ class TikTokClient:
                     "optimization_goal",
                     "optimization_event",
                     "secondary_optimization_event",
-                    "external_action",
-                    "external_type",
                     "conversion_id",
+                    "custom_conversion_id",
                     "pixel_id",
                     "billing_event",
                     "budget",
                     "budget_mode",
                     "placement_type",
-                    "placement",
+                    "placements",
                     "bid_type",
                     "bid_price",
                     "conversion_bid_price",
@@ -209,7 +208,7 @@ class TikTokClient:
             "advertiser_id": self.settings.tiktok_advertiser_id,
             "adgroup_id": adgroup_id,
             "placement_type": "PLACEMENT_TYPE_NORMAL",
-            "placement": placements,
+            "placements": placements,
         }
         payload = self._request("POST", "/adgroup/update/", json_body=body)
         data: dict[str, Any] = payload.get("data") or {}
