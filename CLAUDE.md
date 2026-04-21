@@ -22,7 +22,8 @@ Scaffolded from meta-ads-agent patterns. Before live operation:
 
 ## Technology Stack
 
-- Python 3.11+, FastAPI, Click, Uvicorn, Pydantic v2, pydantic-settings, Anthropic SDK, Rich, pytest, ruff, mypy (strict)
+- Python 3.11+, FastAPI, Click, Uvicorn, Pydantic v2, pydantic-settings, Rich, pytest, ruff, mypy (strict)
+- Execution model: GitHub Actions workflows (scheduled + merge-triggered). No standalone chat UI / Anthropic SDK — strategic reasoning happens in Claude Code sessions; workflows run deterministic Python (data pulls, reports, pause/activate, Telegram posts).
 - `tiktok-business-api-sdk` as the primary TikTok Marketing API client
 - Entry point: `tiktok-ads` CLI → `src/tiktok_ads_agent/cli/main.py`
 
@@ -32,7 +33,7 @@ Same as meta-ads-agent: snake_case modules/functions/vars, PascalCase classes, A
 
 ## Architecture
 
-Mirrors meta-ads-agent. Layers: `core` (client + settings), `models` (pydantic schemas), `api` (FastAPI routers), `cli` (Click), `agent` (Anthropic chat + tools), `reports` (daily/weekly/monthly), `creative` (Corey Haines analysis), `notifications` (Telegram), `state` (JSON persistence).
+Mirrors meta-ads-agent. Layers: `core` (client + settings), `models` (pydantic schemas), `api` (FastAPI routers), `cli` (Click), `reports` (daily/weekly/monthly), `creative` (Corey Haines analysis), `notifications` (Telegram), `state` (JSON persistence). Workflows under `.github/workflows/` invoke the CLI on schedule and post results to Telegram.
 
 ### TikTok vs Meta Terminology Map
 
