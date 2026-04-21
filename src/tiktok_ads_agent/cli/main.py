@@ -46,7 +46,7 @@ def health() -> None:
         console.print(f"{label}: {err}")
         sys.exit(1)
     console.print(
-        f"healthy: advertiser {info.get('id')} '{info.get('name')}' "
+        f"healthy: advertiser {info.get('advertiser_id')} '{info.get('name')}' "
         f"status={info.get('status')} currency={info.get('currency')} "
         f"timezone={info.get('timezone')} country={info.get('country')}"
     )
