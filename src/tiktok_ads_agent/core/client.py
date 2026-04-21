@@ -171,18 +171,74 @@ class TikTokClient:
                     "operation_status",
                     "optimization_goal",
                     "optimization_event",
-                    "pixel_id",
                     "secondary_optimization_event",
+                    "external_action",
+                    "external_type",
+                    "conversion_id",
+                    "pixel_id",
                     "billing_event",
                     "budget",
                     "budget_mode",
                     "placement_type",
+                    "placement",
+                    "bid_type",
+                    "bid_price",
+                    "conversion_bid_price",
                 ]
             ),
         }
         payload = self._request("GET", "/adgroup/get/", params=params)
         data: dict[str, Any] = payload["data"]
         return data
+
+    def update_adgroup_placements(
+        self,
+        *,
+        adgroup_id: str,
+        placements: list[str],
+    ) -> dict[str, Any]:
+        """Switch an adgroup to manual placement and whitelist ``placements``.
+
+        TikTok's default ``PLACEMENT_TYPE_AUTOMATIC`` includes Pangle
+        (external app network) which typically spends cheap and converts
+        poorly for finance. Setting ``PLACEMENT_TYPE_NORMAL`` + an explicit
+        placement list turns Pangle off.
+        """
+
+        body = {
+            "advertiser_id": self.settings.tiktok_advertiser_id,
+            "adgroup_id": adgroup_id,
+            "placement_type": "PLACEMENT_TYPE_NORMAL",
+            "placement": placements,
+        }
+        payload = self._request("POST", "/adgroup/update/", json_body=body)
+        data: dict[str, Any] = payload.get("data") or {}
+        return data
+
+    def list_custom_audiences(self, page_size: int = 100) -> list[dict[str, Any]]:
+        """List custom audiences (for LAL/seed targeting of new adgroups).
+
+        Requires "Audience Management" scope — not guaranteed to be in the
+        current token grant. Raises :class:`TikTokAPIError` with code 40001
+        if the scope is missing; callers should handle that gracefully.
+        """
+
+        all_rows: list[dict[str, Any]] = []
+        page = 1
+        while True:
+            params = {
+                "advertiser_id": self.settings.tiktok_advertiser_id,
+                "page": page,
+                "page_size": page_size,
+            }
+            payload = self._request("GET", "/dmp/custom_audience/list/", params=params)
+            data = payload["data"]
+            all_rows.extend(data.get("list", []))
+            page_info = data.get("page_info", {})
+            if page >= int(page_info.get("total_page", 1)):
+                break
+            page += 1
+        return all_rows
 
     def get_basic_report(
         self,

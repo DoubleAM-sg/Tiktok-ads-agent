@@ -2,8 +2,10 @@
 
 Pulls last-completed-ISO-week's per-ad metrics, ranks ads by CPA, and
 commits a snapshot under ``.state/weekly_snapshots/YYYY-WNN.json``.
-Auto-pause proposals are skipped until W1–W2 baselines exist — for
-now this is a ranking + visibility report.
+
+Auto-pause proposals are skipped until W1–W2 baselines exist. For now
+this is a ranking + visibility report with fatigue + engagement signals
+surfaced for context.
 """
 
 from __future__ import annotations
@@ -27,8 +29,7 @@ def last_iso_week() -> tuple[str, date, date]:
     """
 
     today = datetime.now(SGT).date()
-    # Most recent Sunday on or before yesterday
-    days_since_sunday = (today.weekday() + 1) % 7  # Monday=0 ... Sunday=6
+    days_since_sunday = (today.weekday() + 1) % 7
     this_sunday = today - timedelta(days=days_since_sunday)
     if this_sunday >= today:
         this_sunday -= timedelta(days=7)
@@ -54,6 +55,11 @@ def build_telegram_summary(snapshot: Snapshot) -> str:
         reverse=True,
     )
     with_conv.sort(key=lambda m: m.cost_per_conversion if m.cost_per_conversion else float("inf"))
+    fatigued = [m for m in rows if m.is_fatigued]
+
+    total_reach = sum(m.reach for m in rows)
+    weighted_freq = sum(m.frequency * m.reach for m in rows) / total_reach if total_reach else 0.0
+    total_engagements = sum(m.likes + m.comments + m.shares + m.follows for m in rows)
 
     lines: list[str] = []
     lines.append(
@@ -70,21 +76,45 @@ def build_telegram_summary(snapshot: Snapshot) -> str:
         f"conv {int(t['conversion'])} · "
         f"CPA {t['cpa']:.2f}"
     )
+    lines.append(
+        f"Reach: {total_reach:,} · "
+        f"avg frequency {weighted_freq:.2f} · "
+        f"engagements {total_engagements:,}"
+    )
 
     if with_conv:
         lines.append("")
-        lines.append("Winners (lowest CPA):")
+        lines.append("🏆 Winners (lowest CPA):")
         for m in with_conv[:5]:
             name = (names.get(m.ad_id) or m.ad_id)[:45]
             cpa = f"{m.cost_per_conversion:.2f}" if m.cost_per_conversion else "—"
-            lines.append(f"  · {name} — CPA {cpa} · conv {m.conversion} · spend {m.spend:.2f}")
+            hook = m.hook_retention
+            hook_s = f" · hook {hook * 100:.0f}%" if hook is not None else ""
+            lines.append(
+                f"  · {name} — CPA {cpa} · conv {m.conversion} · "
+                f"spend {m.spend:.2f} · freq {m.frequency:.1f}{hook_s}"
+            )
 
     if no_conv:
         lines.append("")
-        lines.append("Zero-conv spenders (7d):")
+        lines.append("💤 Zero-conv spenders (7d):")
         for m in no_conv[:5]:
             name = (names.get(m.ad_id) or m.ad_id)[:45]
-            lines.append(f"  · {name} — spend {m.spend:.2f} · clk {m.clicks} · 0 conv")
+            hook = m.hook_retention
+            hook_s = f" · hook {hook * 100:.0f}%" if hook is not None else ""
+            lines.append(
+                f"  · {name} — spend {m.spend:.2f} · clk {m.clicks} · "
+                f"freq {m.frequency:.1f}{hook_s}"
+            )
+
+    if fatigued:
+        lines.append("")
+        lines.append("⚠️ Fatigue watch (frequency ≥ 3 — same users seeing it repeatedly):")
+        for m in sorted(fatigued, key=lambda x: x.frequency, reverse=True)[:5]:
+            name = (names.get(m.ad_id) or m.ad_id)[:45]
+            lines.append(
+                f"  · {name} — freq {m.frequency:.2f} · reach {m.reach:,} · spend {m.spend:.2f}"
+            )
 
     lines.append("")
     lines.append(f"Snapshot: .state/weekly_snapshots/{snapshot.period_id}.json")

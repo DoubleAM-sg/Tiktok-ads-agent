@@ -24,11 +24,11 @@ class AdMetadata(BaseModel):
 
 
 class AdGroupMetadata(BaseModel):
-    """Ad group config — notably ``optimization_event`` + ``pixel_id``.
+    """Ad group config — notably ``optimization_event`` / ``external_action``.
 
-    This is where we answer "what do our conversions refer to": the
-    ``optimization_event`` field tells us which pixel event the group
-    is optimizing for (e.g. ``ON_WEB_FORM`` ≈ SingPass form submit).
+    For Lead-Generation / Conversion-to-Website adgroups, the pixel event
+    being optimized for usually surfaces in ``external_action`` (or the
+    related ``conversion_id``), not ``optimization_event``. We pull both.
     """
 
     model_config = ConfigDict(extra="ignore")
@@ -40,11 +40,18 @@ class AdGroupMetadata(BaseModel):
     optimization_goal: str | None = None
     optimization_event: str | None = None
     secondary_optimization_event: str | None = None
+    external_action: str | None = None
+    external_type: str | None = None
+    conversion_id: str | None = None
     billing_event: str | None = None
     pixel_id: str | None = None
     budget: float | None = None
     budget_mode: str | None = None
     placement_type: str | None = None
+    placement: list[str] = Field(default_factory=list)
+    bid_type: str | None = None
+    bid_price: float | None = None
+    conversion_bid_price: float | None = None
 
 
 class CampaignMetadata(BaseModel):
@@ -75,6 +82,10 @@ class AdMetrics(BaseModel):
     conversion: int = 0
     cost_per_conversion: float | None = None
     conversion_rate: float | None = None
+    # Audience + fatigue signals (Corey Haines: frequency is fatigue signal #2)
+    reach: int = 0
+    frequency: float = 0.0
+    # Video retention
     video_play_actions: int = 0
     video_watched_2s: int = 0
     video_watched_6s: int = 0
@@ -82,6 +93,12 @@ class AdMetrics(BaseModel):
     video_views_p50: int = 0
     video_views_p75: int = 0
     video_views_p100: int = 0
+    # Engagement — TikTok-specific (virality + profile interest)
+    likes: int = 0
+    comments: int = 0
+    shares: int = 0
+    follows: int = 0
+    profile_visits: int = 0
 
     @property
     def computed_cpa(self) -> float | None:
@@ -90,6 +107,20 @@ class AdMetrics(BaseModel):
         if self.conversion <= 0:
             return None
         return round(self.spend / self.conversion, 4)
+
+    @property
+    def hook_retention(self) -> float | None:
+        """Share of video plays that stayed past 2 seconds (0.0–1.0)."""
+
+        if self.video_play_actions <= 0:
+            return None
+        return round(self.video_watched_2s / self.video_play_actions, 4)
+
+    @property
+    def is_fatigued(self) -> bool:
+        """Corey Haines fatigue threshold — frequency ≥ 3 = seen-and-ignored."""
+
+        return self.frequency >= 3.0
 
 
 class Snapshot(BaseModel):

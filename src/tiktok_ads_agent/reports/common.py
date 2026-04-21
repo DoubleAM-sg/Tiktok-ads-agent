@@ -34,6 +34,10 @@ METRIC_FIELDS: list[str] = [
     "cost_per_conversion",
     "conversion_rate",
     "real_time_conversion",
+    # Fatigue + audience sizing: frequency ≥ 3 is Corey Haines' seen-and-ignored
+    "reach",
+    "frequency",
+    # Video retention
     "video_play_actions",
     "video_watched_2s",
     "video_watched_6s",
@@ -41,6 +45,12 @@ METRIC_FIELDS: list[str] = [
     "video_views_p50",
     "video_views_p75",
     "video_views_p100",
+    # TikTok-specific engagement (virality + brand lift leading indicators)
+    "likes",
+    "comments",
+    "shares",
+    "follows",
+    "profile_visits",
 ]
 
 
@@ -86,6 +96,8 @@ def _metric_from_row(row: dict[str, Any]) -> AdMetrics:
         conversion=conversion,
         cost_per_conversion=cpa,
         conversion_rate=conv_rate,
+        reach=_coerce_int(mets.get("reach")),
+        frequency=_coerce_float(mets.get("frequency")),
         video_play_actions=_coerce_int(mets.get("video_play_actions")),
         video_watched_2s=_coerce_int(mets.get("video_watched_2s")),
         video_watched_6s=_coerce_int(mets.get("video_watched_6s")),
@@ -93,6 +105,11 @@ def _metric_from_row(row: dict[str, Any]) -> AdMetrics:
         video_views_p50=_coerce_int(mets.get("video_views_p50")),
         video_views_p75=_coerce_int(mets.get("video_views_p75")),
         video_views_p100=_coerce_int(mets.get("video_views_p100")),
+        likes=_coerce_int(mets.get("likes")),
+        comments=_coerce_int(mets.get("comments")),
+        shares=_coerce_int(mets.get("shares")),
+        follows=_coerce_int(mets.get("follows")),
+        profile_visits=_coerce_int(mets.get("profile_visits")),
     )
 
 
