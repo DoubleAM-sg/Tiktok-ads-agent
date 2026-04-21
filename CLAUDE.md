@@ -55,6 +55,8 @@ Mirrors meta-ads-agent. Layers: `core` (client + settings), `models` (pydantic s
 - Metrics expected reliable: spend, impressions, clicks, CTR, CPC, CPM, conversions, video views (3s/6s/15s/completion), engagement
 - Creative text readability: UNKNOWN for Spark Ads / Smart Creative flows. On Meta this returned empty; fall back to manual CSV upload via `creative-reports/manual-upload/` if same issue surfaces
 - Frequency granularity and conversion attribution windows: TBD
+- `/adgroup/get/` field gotchas — `external_action`/`external_type` are **not** valid fields there (they're only on /adgroup/create/); use `placements` (plural, not `placement`); custom pixel events like "Submit application" surface in `custom_conversion_id`, not `optimization_event`
+- Smart+ / Upgraded Smart Plus campaigns reject `/adgroup/update/` mutations — TikTok owns placements / optimization there. Error message: "This API does not support Upgraded Smart Plus ads." Our `exclude_pangle` workflow detects this and marks the adgroup `skipped_smart_plus` rather than failing. Implication: Pangle exclusion must be done via Ads Manager UI for Smart+ campaigns, not via API
 
 **Conversion counting (PMAL-specific):**
 
