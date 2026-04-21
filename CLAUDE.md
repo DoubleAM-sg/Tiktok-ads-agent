@@ -6,6 +6,18 @@
 
 **Core Value:** Autonomous monitoring and creative optimization on TikTok — surface what works, pause what doesn't, recommend next creative batch.
 
+## Session Kick-off — Always Read First
+
+Before suggesting any optimization, pause, creative launch, budget change, audience move, or workflow run:
+
+1. Read `.state/optimization_log.json` — append-only audit of every decision we've made, with rationale. If you're about to propose pausing X, check whether X was already paused/reactivated recently and why.
+2. Read the most recent `.state/weekly_snapshots/YYYY-WNN.json` (and the preceding one if it exists) — current performance baseline + WoW context.
+3. Read the most recent `.state/daily_snapshots/YYYY-MM-DD.json` if a same-week delta matters.
+4. Read `.state/creative_registry.json` if it exists — user-provided creative labels + angles.
+5. Read the **Learnings Log** section at the bottom of this file — TikTok-account-specific patterns we've already proved out or ruled out.
+
+If any of those are missing or stale, say so before proceeding — don't guess from memory, and don't re-litigate decisions already made. When you make a new significant decision (pause, creative add, budget shift, scope request), append it to `.state/optimization_log.json` in the same PR as the change.
+
 ## Setup Status
 
 Scaffolded from meta-ads-agent patterns. Before live operation:
@@ -169,6 +181,53 @@ Invoke relevant skills from `.claude/skills/` before acting — see `using-super
 - `verification-before-completion` — before claiming work done, committing, or opening a PR
 - `executing-plans` / `subagent-driven-development` — when running a written plan
 - `finishing-a-development-branch` — when implementation is complete and ready to integrate
+
+## Learnings Log
+
+Append-only, dated. Add new entries **above** the earlier ones (reverse-chronological). Keep entries tight: what we observed, what we did, what to revisit. TikTok-native only — do not carry Meta inferences forward beyond the setup phase; TikTok audience behaviour, creative affinity, and optimization dynamics are distinct.
+
+---
+
+### 2026-W16 — Baseline established, first snapshot committed
+
+**Setup state at end of week**
+
+- OAuth scope granted: Ad Account Management, Ads Management, Reporting, Measurement, Custom Conversion, Ad Diagnosis, Automated Rules, Reach & Frequency, Lead Management, Mentions, TikTok Accounts, Ad Comments.
+- OAuth scope pending TikTok manual review: **Audience Management, Creative Management, Pixel Management**. Without these: no programmatic audience discovery, limited creative metadata, no direct pixel-event query.
+- GitHub Actions live: `verify-secrets`, `daily-report` (cron 05:00 SGT), `weekly-report` (cron Mon 05:00 SGT), `monthly-report` (cron 1st 05:00 SGT), `send-notification` (dispatch), `exclude-pangle` (idempotent on merge). All commit state back to `main` as `tiktok-ads-bot`.
+- Pipeline validated end-to-end; `.state/weekly_snapshots/2026-W16.json`, `.state/monthly_snapshots/2026-03.json`, `.state/daily_snapshots/2026-04-20.json` all committed.
+
+**Campaign state (end of W16)**
+
+- 1 Smart+ campaign: `Leads-Lookalike-before 1jan2025 rejected`. $20/day dynamic. Objective `LEAD_GENERATION` with Location=Website. Pixel `7624420828901376018` ("PMAL TikTok Pixel") optimizing for custom event **"Submit application"** — this = SingPass form submit on the loan-matching-page = the real conversion.
+- 3 ads active during W16: POV-acknowledge-redirect (new), Cashback-reward, Bank-rejected-storytime.
+
+**W16 performance (Apr 13–19)**
+
+- Totals: $53.63 spend · 7,634 impressions · 94 clicks · **1.21% CTR** · 16 SingPass submits · **$3.35 blended CPA**.
+- Per-ad CPA ranking: POV $1.63 (6 conv, 2 days live), Cashback $3.50 (5 conv), Bank-rejected $5.27 (5 conv).
+- Hook retention (2s-views / plays): Bank-rejected **32%**, POV 18%, Cashback 12%. Bank-rejected has the strongest stop-scroll hook but the weakest conversion rate (9.8%) — more research, less yield.
+- **Budget underspend**: $53.63 actual on $140 planned (38%). Smart+ + narrow audience + tight conversion goal keeps delivery conservative at low volume. Diversifying audiences should lift utilisation.
+
+**Decisions taken**
+
+- **POV removed** post-W16 — TikTok flagged the creative for compliance. Historical snapshot retains its data; future ads sheets won't show it. Implication: re-audit any new acknowledge-redirect variant's language before publishing, especially rate mentions.
+- **Pangle exclusion attempted via API** — failed on the Smart+ adgroup because `/adgroup/update/` rejects placement changes on Smart+ ("This API does not support Upgraded Smart Plus ads."). No loss; Smart+ manages placement internally and W16's $3.35 CPA suggests it's doing so reasonably. Manual Pangle toggle only possible via Ads Manager UI on Smart+. Our workflow now classifies this as `skipped_smart_plus` rather than `failed`, so re-runs are no-ops.
+- **Ad group expansion deferred to 2026-04-22** — user will create LAL Narrow MS+SS and Custom Rejected-List adgroups in Ads Manager. Same 3 (now 2 remaining) existing ads + Spark Ad from scheduled organic post (lower CPM, higher trust).
+
+**API findings (TikTok v1.3)**
+
+- `/adgroup/get/` fields: the param is **`placements`** plural, not `placement`. Custom pixel events like "Submit application" live in **`custom_conversion_id`**, not `optimization_event` (which is null on LEAD_GEN/Website adgroups). `external_action` / `external_type` are create-only — requesting them on GET returns `40002`.
+- Smart+ adgroups reject `/adgroup/update/` mutations entirely. Treat Smart+ as a black box for placement / optimization; only Manual adgroups are scriptable.
+- Conversion-field reconciliation: campaign `objective_type: LEAD_GENERATION` does not mean TikTok in-app lead forms when **Location: Website** is set. The `conversion` metric in reports = actual pixel `SubmitForm` events. Verified via Ads Manager UI (ad group → Optimization and bidding → Event: "Submit application").
+
+**Open / to revisit**
+
+- Pixel Management + Audience Management + Creative Management scopes — check status ~Apr 26 and re-auth once granted.
+- W17 first real baseline computation (needs 7 days of clean data with the new adgroups and the frequency/engagement metrics the pipeline now pulls). Auto-pause proposals unlock after two consecutive weeks.
+- TikTok finance CTR benchmark of 5–8% (industry rumour) is well above our 1.21%. Not alarming given CPA is good — but if CPA creeps up it's the first lever to pull (creative refresh).
+
+---
 
 ## Cross-Reference — meta-ads-agent
 

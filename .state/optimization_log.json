@@ -1,1 +1,54 @@
-[]
+[
+  {
+    "date": "2026-04-21",
+    "week": "2026-W17",
+    "actor": "user",
+    "action": "ad_removed",
+    "entity_type": "ad",
+    "entity_id": "1862715093286945",
+    "entity_name": "POV: The bank just rejected your loan and you don't know what to do",
+    "reason": "TikTok compliance flag",
+    "metrics_at_decision": {
+      "period": "2026-04-17..2026-04-20",
+      "spend": 13.2,
+      "conversion": 6,
+      "cpa": 2.2,
+      "ctr_pct": 1.6,
+      "note": "2-day-old creative with strongest early CPA (W16 ranking #1) before removal"
+    }
+  },
+  {
+    "date": "2026-04-21",
+    "week": "2026-W17",
+    "actor": "automation",
+    "action": "pangle_exclusion_attempted",
+    "entity_type": "adgroup",
+    "entity_id": "1861430108768257",
+    "entity_name": "Leads-Lookalike-before 1jan2025 rejected",
+    "outcome": "skipped_smart_plus",
+    "reason": "TikTok /adgroup/update/ rejects placement changes on Smart+ adgroups (error 40002: 'This API does not support Upgraded Smart Plus ads.')",
+    "implication": "Pangle exclusion on Smart+ can only be done via Ads Manager UI, not API. Workflow now classifies this as skipped rather than failed."
+  },
+  {
+    "date": "2026-04-21",
+    "week": "2026-W17",
+    "actor": "user",
+    "action": "planned_adgroup_creation_deferred",
+    "entity_type": "adgroup",
+    "entity_id": null,
+    "entity_name": "LAL Narrow MS+SS + Custom Rejected-List",
+    "reason": "deferred to 2026-04-22 (Wed)",
+    "notes": "Two new adgroups planned under the existing campaign. First carries the 2 remaining current ads (Cashback, Bank-rejected) plus a Spark Ad from a scheduled organic post. Second is Custom Audience direct from rejected list."
+  },
+  {
+    "date": "2026-04-21",
+    "week": "2026-W17",
+    "actor": "automation",
+    "action": "pipeline_scaffolded",
+    "entity_type": "system",
+    "entity_id": null,
+    "entity_name": "daily/weekly/monthly + exclude-pangle + verify-secrets",
+    "outcome": "success",
+    "notes": "First snapshots committed: daily 2026-04-20, weekly 2026-W16, monthly 2026-03. Metrics expansion (reach, frequency, engagement, hook retention) live."
+  }
+]
