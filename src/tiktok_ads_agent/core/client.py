@@ -73,7 +73,9 @@ class TikTokClient:
 
         params = {
             "advertiser_ids": json.dumps([self.settings.tiktok_advertiser_id]),
-            "fields": json.dumps(["id", "name", "status", "currency", "timezone", "country"]),
+            "fields": json.dumps(
+                ["advertiser_id", "name", "status", "currency", "timezone", "country"]
+            ),
         }
         payload = self._request("GET", "/advertiser/info/", params=params)
         rows: list[dict[str, Any]] = payload["data"]["list"]
