@@ -11,10 +11,13 @@ def send_message(text: str, settings: Settings | None = None) -> None:
     """POST ``text`` to the configured Telegram chat (and topic, if set)."""
 
     cfg = settings or load_settings()
+    # No parse_mode: our messages are plain text with emojis and bullets,
+    # but contain literal ``<`` (e.g. ``new (<3d): ...``) and ad captions
+    # may include ``<``, ``>``, ``&`` that Telegram's HTML parser rejects
+    # with 400 Bad Request.
     body: dict[str, object] = {
         "chat_id": cfg.telegram_chat_id,
         "text": text,
-        "parse_mode": "HTML",
         "disable_web_page_preview": True,
     }
     if cfg.telegram_topic_id:
