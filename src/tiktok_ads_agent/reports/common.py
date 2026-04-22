@@ -133,13 +133,18 @@ def fetch_snapshot(
 
     ads = [AdMetadata.model_validate(row) for row in client.list_ads(page_size=200)]
 
+    # Pass the full known ad_id roster into the report filter so
+    # deleted ads still show their historical metrics for the reporting
+    # window. Without this, TikTok silently drops any ad whose
+    # secondary_status flipped to AD_STATUS_DELETE after yesterday.
     report_payload = client.get_basic_report(
         data_level="AUCTION_AD",
         dimensions=["ad_id"],
         metrics=METRIC_FIELDS,
         start_date=start_date,
         end_date=end_date,
-        page_size=200,
+        page_size=max(len(ads) * 2, 200),
+        ad_ids=[ad.ad_id for ad in ads],
     )
     metrics = [_metric_from_row(row) for row in report_payload.get("list", [])]
 

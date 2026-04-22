@@ -290,12 +290,22 @@ class TikTokClient:
         start_date: str,
         end_date: str,
         page_size: int = 100,
+        ad_ids: list[str] | None = None,
     ) -> dict[str, Any]:
         """Pull an aggregated synchronous report.
 
         ``data_level`` is one of AUCTION_ADVERTISER | AUCTION_CAMPAIGN |
         AUCTION_ADGROUP | AUCTION_AD. Dates are YYYY-MM-DD in the
         advertiser's timezone.
+
+        Pass ``ad_ids`` to force TikTok to return rows for a specific
+        ad_id set, including deleted ads. The default behaviour of
+        ``/report/integrated/get/`` is to hide ads whose
+        ``secondary_status`` is ``AD_STATUS_DELETE`` — which drops
+        historical conversion data for the reporting window the moment
+        an ad gets removed. Passing the full known id list from
+        :meth:`list_ads` with ``primary_status=STATUS_ALL`` preserves
+        yesterday's truth regardless of today's status.
         """
 
         params = {
@@ -309,6 +319,16 @@ class TikTokClient:
             "page": 1,
             "page_size": page_size,
         }
+        if ad_ids:
+            params["filtering"] = json.dumps(
+                [
+                    {
+                        "field_name": "ad_ids",
+                        "filter_type": "IN",
+                        "filter_value": json.dumps(ad_ids),
+                    }
+                ]
+            )
         payload = self._request("GET", "/report/integrated/get/", params=params)
         data: dict[str, Any] = payload["data"]
         return data
