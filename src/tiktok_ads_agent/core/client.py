@@ -122,6 +122,12 @@ class TikTokClient:
 
         Pages through ``/ad/get/`` until exhausted. Fields selected are
         what the cadence reports need for name + hierarchy mapping.
+
+        ``filtering.primary_status=STATUS_ALL`` is passed explicitly
+        because TikTok's default for ``/ad/get/`` is ``STATUS_NOT_DELETE``,
+        which also hides some Spark-Ad / appeal-under-review objects we
+        need to see in the snapshot to stay in sync with the Ads Manager
+        UI. Callers can filter afterwards if they only want ENABLE ads.
         """
 
         fields = [
@@ -130,6 +136,7 @@ class TikTokClient:
             "adgroup_id",
             "campaign_id",
             "operation_status",
+            "secondary_status",
             "create_time",
             "modify_time",
         ]
@@ -141,6 +148,7 @@ class TikTokClient:
                 "page": page,
                 "page_size": page_size,
                 "fields": json.dumps(fields),
+                "filtering": json.dumps({"primary_status": "STATUS_ALL"}),
             }
             payload = self._request("GET", "/ad/get/", params=params)
             data = payload["data"]

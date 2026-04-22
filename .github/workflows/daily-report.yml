@@ -15,6 +15,10 @@ name: Daily TikTok Ads Report
 #   - bump 4: refresh ad metadata + adopt creative_registry labels
 #     (PR #21) so the Telegram post uses user-assigned short names
 #     instead of the caption TikTok stores as ad_name
+#   - bump 5: widen /ad/get/ filter to STATUS_ALL; Ads Manager UI
+#     showed 3 ads (Who is PMAL / Cashback Launch / PMAL UGC) that
+#     the default STATUS_NOT_DELETE filter was hiding. Refresh
+#     roster so snapshot matches UI.
 #   - bump 4: refresh ad metadata — user reports legacy caption-named
 #     ads no longer in Ads Manager; confirm via fresh /ad/get/ pull
 

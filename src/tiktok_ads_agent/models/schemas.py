@@ -20,6 +20,7 @@ class AdMetadata(BaseModel):
     adgroup_id: str | None = None
     campaign_id: str | None = None
     operation_status: str | None = None
+    secondary_status: str | None = None
     create_time: str | None = None
 
 
