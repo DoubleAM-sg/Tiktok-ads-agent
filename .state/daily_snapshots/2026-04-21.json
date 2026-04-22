@@ -134,7 +134,7 @@
     },
     {
       "ad_id": "1862715093286945",
-      "ad_name": "POV: The bank just rejected your loan and you don't know what to do 😬 This is what most people don't know — there's a smarter backup plan. Watch till the end. No sales calls. No pressure. Free to use. Rates from 1.88% (T&Cs apply). Don't say never tell you 🤷 #personalloan #singapore #sgmoney #moneytok #financetok #loansg #foryou #fyp #sgfyp #adultingsg",
+      "ad_name": "POV: The bank just rejected your loan and you don't know what to do \ud83d\ude2c This is what most people don't know \u2014 there's a smarter backup plan. Watch till the end. No sales calls. No pressure. Free to use. Rates from 1.88% (T&Cs apply). Don't say never tell you \ud83e\udd37 #personalloan #singapore #sgmoney #moneytok #financetok #loansg #foryou #fyp #sgfyp #adultingsg",
       "adgroup_id": "1861430108768257",
       "campaign_id": "1861430061161953",
       "operation_status": "ENABLE",
@@ -143,7 +143,7 @@
     },
     {
       "ad_id": "1861694074987874",
-      "ad_name": "POV: The bank just rejected your loan and you don't know what to do 😬 This is what most people don't know — there's a smarter backup plan. Watch till the end. No sales calls. No pressure. Free to use. Rates from 1.88% (T&Cs apply). Don't say never tell you 🤷 #personalloan #singapore #sgmoney #moneytok #financetok #loansg #foryou #fyp #sgfyp #adultingsg",
+      "ad_name": "POV: The bank just rejected your loan and you don't know what to do \ud83d\ude2c This is what most people don't know \u2014 there's a smarter backup plan. Watch till the end. No sales calls. No pressure. Free to use. Rates from 1.88% (T&Cs apply). Don't say never tell you \ud83e\udd37 #personalloan #singapore #sgmoney #moneytok #financetok #loansg #foryou #fyp #sgfyp #adultingsg",
       "adgroup_id": "1861430108768257",
       "campaign_id": "1861430061161953",
       "operation_status": "ENABLE",
@@ -152,7 +152,7 @@
     },
     {
       "ad_id": "1861694072293442",
-      "ad_name": "Wait — you can get cashback on a personal loan now?? 👀 PickMeALoan just launched rewards on every successful loan. $50 minimum or 1% back. Borrow $20K, get $200 back. Redeem at Grab, Shopee, FairPrice, Lazada 🛒 Free to use. No catch. #cashback #personalloan #singapore #moneytok #financetok #sgmoney #fyp #foryou #sgfyp #lifehacksg",
+      "ad_name": "Wait \u2014 you can get cashback on a personal loan now?? \ud83d\udc40 PickMeALoan just launched rewards on every successful loan. $50 minimum or 1% back. Borrow $20K, get $200 back. Redeem at Grab, Shopee, FairPrice, Lazada \ud83d\uded2 Free to use. No catch. #cashback #personalloan #singapore #moneytok #financetok #sgmoney #fyp #foryou #sgfyp #lifehacksg",
       "adgroup_id": "1861430108768257",
       "campaign_id": "1861430061161953",
       "operation_status": "ENABLE",
@@ -161,7 +161,7 @@
     },
     {
       "ad_id": "1861694072282658",
-      "ad_name": "Bank rejected their loan. Here's what they did next 👇 Applied on PickMeALoan → Got offers on WhatsApp → Collected cash in 1 hour via PayNow 🤯 No sales calls. Free to use. #personalloan #singapore #moneytok #financetok #sgmoney #fyp #foryou #sgfyp #storytime",
+      "ad_name": "Bank rejected their loan. Here's what they did next \ud83d\udc47 Applied on PickMeALoan \u2192 Got offers on WhatsApp \u2192 Collected cash in 1 hour via PayNow \ud83e\udd2f No sales calls. Free to use. #personalloan #singapore #moneytok #financetok #sgmoney #fyp #foryou #sgfyp #storytime",
       "adgroup_id": "1861430108768257",
       "campaign_id": "1861430061161953",
       "operation_status": "ENABLE",
@@ -221,6 +221,32 @@
       "shares": 0,
       "follows": 0,
       "profile_visits": 1
+    },
+    {
+      "ad_id": "1862715093286945",
+      "spend": 7.81,
+      "impressions": 824,
+      "clicks": 11,
+      "ctr": 1.33,
+      "cpc": 0.71,
+      "cpm": 9.48,
+      "conversion": 3,
+      "cost_per_conversion": 2.6,
+      "conversion_rate": 27.27,
+      "reach": 807,
+      "frequency": 1.02,
+      "video_play_actions": 794,
+      "video_watched_2s": 138,
+      "video_watched_6s": 63,
+      "video_views_p25": 39,
+      "video_views_p50": 31,
+      "video_views_p75": 23,
+      "video_views_p100": 15,
+      "likes": 1,
+      "comments": 0,
+      "shares": 1,
+      "follows": 0,
+      "profile_visits": 0
     }
   ]
 }

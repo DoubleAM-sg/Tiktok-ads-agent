@@ -32,6 +32,11 @@ name: Daily TikTok Ads Report
 #     snapshot lost POV's 3 conversions from 2026-04-21 the
 #     moment POV was deleted; re-pull with the filter restores
 #     the full 7-conversion day.
+#   - bump 9: filtering.ad_ids alone wasn't enough (TikTok still
+#     drops deleted ads from /report/integrated/get/). Merge
+#     prior on-disk snapshot rows into new fetches so historical
+#     metrics persist across ad deletions; bootstrap POV's 3
+#     conversions back from commit 85d673c.
 #   - bump 4: refresh ad metadata — user reports legacy caption-named
 #     ads no longer in Ads Manager; confirm via fresh /ad/get/ pull
 
