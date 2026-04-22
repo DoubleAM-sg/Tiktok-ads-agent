@@ -180,3 +180,127 @@ def ad_name_map(snapshot: Snapshot) -> dict[str, str]:
     """Map ``ad_id`` → ``ad_name`` for pretty-printing."""
 
     return {ad.ad_id: (ad.ad_name or ad.ad_id) for ad in snapshot.ads}
+
+
+def short_label(name: str | None, max_len: int = 32) -> str:
+    """Condense a verbose ad name into a table-friendly label.
+
+    TikTok ad names in this account are the full caption (multi-line,
+    emoji- and hashtag-heavy). For dense sections like Creative /
+    Ad Performance we want something that fits in one column, so take
+    the first line and hard-truncate with an ellipsis.
+    """
+
+    if not name:
+        return "(unnamed)"
+    first = name.splitlines()[0].strip()
+    if len(first) <= max_len:
+        return first
+    return first[: max_len - 1].rstrip() + "…"
+
+
+def _blank_agg() -> dict[str, float]:
+    return {"spend": 0.0, "impressions": 0, "clicks": 0, "conversion": 0}
+
+
+def _finalise_agg(bucket: dict[str, dict[str, float]]) -> None:
+    """Round spend and derive CPA in place for every row."""
+
+    for row in bucket.values():
+        conv = row["conversion"]
+        row["cpa"] = round(row["spend"] / conv, 2) if conv else 0.0
+        row["spend"] = round(row["spend"], 2)
+
+
+def aggregate_by_campaign(snapshot: Snapshot) -> dict[str, dict[str, float]]:
+    """Aggregate ad-level metrics up to campaign level."""
+
+    parent = {ad.ad_id: ad.campaign_id for ad in snapshot.ads if ad.campaign_id}
+    bucket: dict[str, dict[str, float]] = {}
+    for m in snapshot.metrics:
+        cid = parent.get(m.ad_id)
+        if not cid:
+            continue
+        row = bucket.setdefault(cid, _blank_agg())
+        row["spend"] += m.spend
+        row["impressions"] += m.impressions
+        row["clicks"] += m.clicks
+        row["conversion"] += m.conversion
+    _finalise_agg(bucket)
+    return bucket
+
+
+def aggregate_by_adgroup(snapshot: Snapshot) -> dict[str, dict[str, float]]:
+    """Aggregate ad-level metrics up to ad group level."""
+
+    parent = {ad.ad_id: ad.adgroup_id for ad in snapshot.ads if ad.adgroup_id}
+    bucket: dict[str, dict[str, float]] = {}
+    for m in snapshot.metrics:
+        gid = parent.get(m.ad_id)
+        if not gid:
+            continue
+        row = bucket.setdefault(gid, _blank_agg())
+        row["spend"] += m.spend
+        row["impressions"] += m.impressions
+        row["clicks"] += m.clicks
+        row["conversion"] += m.conversion
+    _finalise_agg(bucket)
+    return bucket
+
+
+def aggregate_by_creative(
+    snapshot: Snapshot, *, label_len: int = 32
+) -> dict[str, dict[str, float]]:
+    """Aggregate by short creative label (ad_name truncated).
+
+    When a creative is used in a single adgroup this mirrors the ad
+    breakdown; the value emerges once the same name is reused across
+    multiple ad groups.
+    """
+
+    labels = {ad.ad_id: short_label(ad.ad_name, label_len) for ad in snapshot.ads}
+    bucket: dict[str, dict[str, float]] = {}
+    for m in snapshot.metrics:
+        lbl = labels.get(m.ad_id, m.ad_id)
+        row = bucket.setdefault(lbl, _blank_agg())
+        row["spend"] += m.spend
+        row["impressions"] += m.impressions
+        row["clicks"] += m.clicks
+        row["conversion"] += m.conversion
+    _finalise_agg(bucket)
+    return bucket
+
+
+def fetch_mtd_campaign_totals(
+    settings: Settings, *, month_start: str, end_date: str
+) -> dict[str, dict[str, float]]:
+    """Pull month-to-date campaign totals via the reporting API.
+
+    Used by the daily report's MTD Pacing section. A separate call
+    rather than summing local daily snapshots because we usually only
+    have a handful of prior snapshots on disk.
+    """
+
+    client = TikTokClient(settings)
+    payload = client.get_basic_report(
+        data_level="AUCTION_CAMPAIGN",
+        dimensions=["campaign_id"],
+        metrics=["spend", "clicks", "conversion"],
+        start_date=month_start,
+        end_date=end_date,
+        page_size=200,
+    )
+    bucket: dict[str, dict[str, float]] = {}
+    for row in payload.get("list", []):
+        dims = row.get("dimensions", {})
+        mets = row.get("metrics", {})
+        cid = str(dims.get("campaign_id", ""))
+        if not cid:
+            continue
+        bucket[cid] = {
+            "spend": _coerce_float(mets.get("spend")),
+            "clicks": _coerce_int(mets.get("clicks")),
+            "conversion": _coerce_int(mets.get("conversion")),
+        }
+    _finalise_agg(bucket)
+    return bucket
