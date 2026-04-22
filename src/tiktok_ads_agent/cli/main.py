@@ -138,6 +138,58 @@ def report_monthly() -> None:
 
 
 @cli.group()
+def ad() -> None:
+    """Ad-level queries + lifecycle operations."""
+
+
+@ad.command("lookup")
+@click.argument("ad_ids", nargs=-1, required=True)
+@click.option(
+    "--no-telegram",
+    is_flag=True,
+    default=False,
+    help="Skip the Telegram summary post (local dry runs).",
+)
+def ad_lookup(ad_ids: tuple[str, ...], no_telegram: bool) -> None:
+    """Probe TikTok for specific ``ad_id`` values.
+
+    Used to reconcile Ads Manager UI screenshots against what our
+    OAuth token can actually see. Prints a row per id with
+    ``operation_status`` / ``secondary_status`` / ``adgroup_id`` /
+    ``ad_name``, or ``(not returned)`` if TikTok does not recognise
+    the id under the configured advertiser.
+    """
+
+    settings = load_settings()
+    client = TikTokClient(settings)
+    try:
+        rows = client.get_ads_by_ids(list(ad_ids))
+    except TikTokAPIError as err:
+        label = "expired" if err.is_expired_token else "error"
+        console.print(f"{label}: {err}")
+        sys.exit(1)
+
+    by_id = {str(r.get("ad_id")): r for r in rows}
+    lines = [f"🔎 Ad lookup — advertiser {settings.tiktok_advertiser_id}"]
+    for aid in ad_ids:
+        row = by_id.get(aid)
+        if row is None:
+            lines.append(f"  · {aid} — (not returned)")
+            continue
+        name = (row.get("ad_name") or "")[:60]
+        op = row.get("operation_status") or "-"
+        sec = row.get("secondary_status") or "-"
+        group = row.get("adgroup_id") or "-"
+        lines.append(
+            f"  · {aid} — op={op} sec={sec} adgroup={group}\n    {name}"
+        )
+    message = "\n".join(lines)
+    console.print(message)
+    if not no_telegram:
+        send_message(message)
+
+
+@cli.group()
 def adgroup() -> None:
     """Ad group mutations (pause, resume, placement, etc.)."""
 
