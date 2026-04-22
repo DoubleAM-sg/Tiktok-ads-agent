@@ -1,0 +1,150 @@
+{
+  "cadence": "daily",
+  "period_id": "2026-04-21",
+  "start_date": "2026-04-21",
+  "end_date": "2026-04-21",
+  "generated_at": "2026-04-22T02:38:32+00:00",
+  "advertiser_id": "7624416803980345360",
+  "campaigns": [
+    {
+      "campaign_id": "1861430061161953",
+      "campaign_name": "Leads-Manual",
+      "operation_status": "ENABLE",
+      "objective_type": "LEAD_GENERATION",
+      "budget": 20.0,
+      "budget_mode": "BUDGET_MODE_DYNAMIC_DAILY_BUDGET"
+    }
+  ],
+  "adgroups": [
+    {
+      "adgroup_id": "1861430108768257",
+      "adgroup_name": "Leads-Lookalike-before 1jan2025 rejected",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "optimization_goal": "CONVERT",
+      "optimization_event": null,
+      "secondary_optimization_event": null,
+      "conversion_id": null,
+      "custom_conversion_id": "0",
+      "billing_event": "OCPM",
+      "pixel_id": "7624420828901376018",
+      "budget": 0.0,
+      "budget_mode": "BUDGET_MODE_INFINITE",
+      "placement_type": "PLACEMENT_TYPE_AUTOMATIC",
+      "placements": [
+        "PLACEMENT_TIKTOK",
+        "PLACEMENT_GLOBAL_APP_BUNDLE",
+        "PLACEMENT_PANGLE"
+      ],
+      "bid_type": "BID_TYPE_NO_BID",
+      "bid_price": 0.0,
+      "conversion_bid_price": 0.0
+    }
+  ],
+  "ads": [
+    {
+      "ad_id": "1862715093286945",
+      "ad_name": "POV: The bank just rejected your loan and you don't know what to do 😬 This is what most people don't know — there's a smarter backup plan. Watch till the end. No sales calls. No pressure. Free to use. Rates from 1.88% (T&Cs apply). Don't say never tell you 🤷 #personalloan #singapore #sgmoney #moneytok #financetok #loansg #foryou #fyp #sgfyp #adultingsg",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "create_time": "2026-04-17 10:59:07"
+    },
+    {
+      "ad_id": "1861694072293442",
+      "ad_name": "Wait — you can get cashback on a personal loan now?? 👀 PickMeALoan just launched rewards on every successful loan. $50 minimum or 1% back. Borrow $20K, get $200 back. Redeem at Grab, Shopee, FairPrice, Lazada 🛒 Free to use. No catch. #cashback #personalloan #singapore #moneytok #financetok #sgmoney #fyp #foryou #sgfyp #lifehacksg",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "create_time": "2026-04-06 04:30:28"
+    },
+    {
+      "ad_id": "1861694072282658",
+      "ad_name": "Bank rejected their loan. Here's what they did next 👇 Applied on PickMeALoan → Got offers on WhatsApp → Collected cash in 1 hour via PayNow 🤯 No sales calls. Free to use. #personalloan #singapore #moneytok #financetok #sgmoney #fyp #foryou #sgfyp #storytime",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "create_time": "2026-04-06 04:30:28"
+    }
+  ],
+  "metrics": [
+    {
+      "ad_id": "1862715093286945",
+      "spend": 7.81,
+      "impressions": 824,
+      "clicks": 11,
+      "ctr": 1.33,
+      "cpc": 0.71,
+      "cpm": 9.48,
+      "conversion": 3,
+      "cost_per_conversion": 2.6,
+      "conversion_rate": 27.27,
+      "reach": 807,
+      "frequency": 1.02,
+      "video_play_actions": 794,
+      "video_watched_2s": 138,
+      "video_watched_6s": 63,
+      "video_views_p25": 39,
+      "video_views_p50": 31,
+      "video_views_p75": 23,
+      "video_views_p100": 15,
+      "likes": 1,
+      "comments": 0,
+      "shares": 1,
+      "follows": 0,
+      "profile_visits": 0
+    },
+    {
+      "ad_id": "1861694072282658",
+      "spend": 12.22,
+      "impressions": 1381,
+      "clicks": 14,
+      "ctr": 1.01,
+      "cpc": 0.87,
+      "cpm": 8.85,
+      "conversion": 3,
+      "cost_per_conversion": 4.07,
+      "conversion_rate": 21.43,
+      "reach": 1366,
+      "frequency": 1.01,
+      "video_play_actions": 1319,
+      "video_watched_2s": 379,
+      "video_watched_6s": 107,
+      "video_views_p25": 59,
+      "video_views_p50": 33,
+      "video_views_p75": 22,
+      "video_views_p100": 16,
+      "likes": 2,
+      "comments": 0,
+      "shares": 0,
+      "follows": 0,
+      "profile_visits": 0
+    },
+    {
+      "ad_id": "1861694072293442",
+      "spend": 4.94,
+      "impressions": 638,
+      "clicks": 4,
+      "ctr": 0.63,
+      "cpc": 1.24,
+      "cpm": 7.74,
+      "conversion": 1,
+      "cost_per_conversion": 4.94,
+      "conversion_rate": 25.0,
+      "reach": 627,
+      "frequency": 1.02,
+      "video_play_actions": 609,
+      "video_watched_2s": 76,
+      "video_watched_6s": 26,
+      "video_views_p25": 30,
+      "video_views_p50": 12,
+      "video_views_p75": 8,
+      "video_views_p100": 5,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "follows": 0,
+      "profile_visits": 1
+    }
+  ]
+}
