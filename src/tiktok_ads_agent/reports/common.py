@@ -199,6 +199,30 @@ def short_label(name: str | None, max_len: int = 32) -> str:
     return first[: max_len - 1].rstrip() + "…"
 
 
+def display_name_map(
+    snapshot: Snapshot,
+    *,
+    registry: dict[str, dict[str, Any]] | None = None,
+    max_len: int = 32,
+) -> dict[str, str]:
+    """Map ``ad_id`` → user-facing label for reports.
+
+    Consults the creative registry first (``.state/creative_registry.json``);
+    falls back to a truncated ``ad_name``. Used by every table in the
+    daily/weekly reports so relabelling an ad updates every section at once.
+    """
+
+    registry = registry or {}
+    names: dict[str, str] = {}
+    for ad in snapshot.ads:
+        entry = registry.get(ad.ad_id)
+        if entry and entry.get("label"):
+            names[ad.ad_id] = str(entry["label"])
+        else:
+            names[ad.ad_id] = short_label(ad.ad_name, max_len)
+    return names
+
+
 def _blank_agg() -> dict[str, float]:
     return {"spend": 0.0, "impressions": 0, "clicks": 0, "conversion": 0}
 
@@ -249,16 +273,20 @@ def aggregate_by_adgroup(snapshot: Snapshot) -> dict[str, dict[str, float]]:
 
 
 def aggregate_by_creative(
-    snapshot: Snapshot, *, label_len: int = 32
+    snapshot: Snapshot,
+    *,
+    registry: dict[str, dict[str, Any]] | None = None,
+    label_len: int = 32,
 ) -> dict[str, dict[str, float]]:
-    """Aggregate by short creative label (ad_name truncated).
+    """Aggregate by display label (registry-first, fallback to truncated name).
 
-    When a creative is used in a single adgroup this mirrors the ad
-    breakdown; the value emerges once the same name is reused across
-    multiple ad groups.
+    Two ad_ids that share a registry label collapse into one row — which
+    is the point: the creative-registry lets the user declare "these two
+    ads are the same creative angle" even if TikTok sees them as
+    separate ad objects.
     """
 
-    labels = {ad.ad_id: short_label(ad.ad_name, label_len) for ad in snapshot.ads}
+    labels = display_name_map(snapshot, registry=registry, max_len=label_len)
     bucket: dict[str, dict[str, float]] = {}
     for m in snapshot.metrics:
         lbl = labels.get(m.ad_id, m.ad_id)

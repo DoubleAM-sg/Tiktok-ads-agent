@@ -102,3 +102,28 @@ def save_json(path: Path, data: Any) -> None:
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+
+
+def load_creative_registry() -> dict[str, dict[str, Any]]:
+    """Load ``.state/creative_registry.json`` normalised to a uniform shape.
+
+    Accepts two entry shapes for user convenience:
+
+    * Bare string: ``"1861694072282658": "PMAL UGC"``
+    * Object:      ``"1861694072282658": {"label": "PMAL UGC", "angle": "social-proof"}``
+
+    Both are returned as ``{"label": ..., "angle": ...}`` with ``angle``
+    left as ``None`` when omitted. Unknown keys are preserved so future
+    fields (hook variant, CTA, etc.) can be added without touching this
+    loader.
+    """
+
+    raw = load_json(CREATIVE_REGISTRY_PATH, {})
+    normalised: dict[str, dict[str, Any]] = {}
+    for ad_id, entry in raw.items():
+        if isinstance(entry, str):
+            normalised[str(ad_id)] = {"label": entry, "angle": None}
+        elif isinstance(entry, dict):
+            merged = {"angle": None, **entry}
+            normalised[str(ad_id)] = merged
+    return normalised
