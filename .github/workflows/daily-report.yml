@@ -23,6 +23,10 @@ name: Daily TikTok Ads Report
 #     label as PMAL UGC (matches user's mental model: 6 UGC conv,
 #     1 Cashback Launch conv); show ad_id tail in Ad Performance
 #     rows so the two UGC variants stay distinguishable.
+#   - bump 7: Ad Performance now aggregates by label (ad level)
+#     rather than per ACO variant, with a separate Creative
+#     Variants section that surfaces only when a label has >1
+#     delivering variant. Matches the ad-level view in the UI.
 #   - bump 4: refresh ad metadata — user reports legacy caption-named
 #     ads no longer in Ads Manager; confirm via fresh /ad/get/ pull
 
