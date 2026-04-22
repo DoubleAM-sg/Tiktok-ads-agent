@@ -19,6 +19,10 @@ name: Daily TikTok Ads Report
 #     showed 3 ads (Who is PMAL / Cashback Launch / PMAL UGC) that
 #     the default STATUS_NOT_DELETE filter was hiding. Refresh
 #     roster so snapshot matches UI.
+#   - bump 6: remap registry so POV + Bank-rejected ad_ids both
+#     label as PMAL UGC (matches user's mental model: 6 UGC conv,
+#     1 Cashback Launch conv); show ad_id tail in Ad Performance
+#     rows so the two UGC variants stay distinguishable.
 #   - bump 4: refresh ad metadata — user reports legacy caption-named
 #     ads no longer in Ads Manager; confirm via fresh /ad/get/ pull
 
