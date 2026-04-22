@@ -3,7 +3,7 @@
   "period_id": "2026-04-21",
   "start_date": "2026-04-21",
   "end_date": "2026-04-21",
-  "generated_at": "2026-04-22T04:26:50+00:00",
+  "generated_at": "2026-04-22T04:30:55+00:00",
   "advertiser_id": "7624416803980345360",
   "campaigns": [
     {
@@ -42,6 +42,24 @@
     }
   ],
   "ads": [
+    {
+      "ad_id": "1863143599249425",
+      "ad_name": "There's at least $50 in cashback most borrowers in Singapore don't know about. If you're comparing personal loans — and you should be — PickMeALoan pays cashback on every successful loan matched through the platform. - $50 minimum cashback - Or 1% of your loan amount, no cap - $30,000 loan = $300 back - Redeem on Grab, Shopee, FairPrice, or Lazada How it works: 1. Log in with Singpass 2. Answer 3 questions 3. Get matched offers from licensed lenders on WhatsApp About 2 minutes. No sales calls. Free for borr",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELIVERY_OK",
+      "create_time": "2026-04-22 04:30:14"
+    },
+    {
+      "ad_id": "1863143599228257",
+      "ad_name": "Taking a personal loan in Singapore? Get something back. Every loan matched through PickMeALoan earns cashback — minimum $50, or 1% of your loan, whichever is higher. No conditions. No minimum loan size. Redeem on Grab, Shopee, FairPrice, or Lazada. Singpass → 3 questions → offers on WhatsApp. ~2 minutes. 👉 pickmealoan.com",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELIVERY_OK",
+      "create_time": "2026-04-22 04:30:14"
+    },
     {
       "ad_id": "1862747290699905",
       "ad_name": "Auto-generated-CTA_POV-1-20260417_120101-4",
@@ -134,7 +152,7 @@
     },
     {
       "ad_id": "1862715093286945",
-      "ad_name": "POV: The bank just rejected your loan and you don't know what to do \ud83d\ude2c This is what most people don't know \u2014 there's a smarter backup plan. Watch till the end. No sales calls. No pressure. Free to use. Rates from 1.88% (T&Cs apply). Don't say never tell you \ud83e\udd37 #personalloan #singapore #sgmoney #moneytok #financetok #loansg #foryou #fyp #sgfyp #adultingsg",
+      "ad_name": "POV: The bank just rejected your loan and you don't know what to do 😬 This is what most people don't know — there's a smarter backup plan. Watch till the end. No sales calls. No pressure. Free to use. Rates from 1.88% (T&Cs apply). Don't say never tell you 🤷 #personalloan #singapore #sgmoney #moneytok #financetok #loansg #foryou #fyp #sgfyp #adultingsg",
       "adgroup_id": "1861430108768257",
       "campaign_id": "1861430061161953",
       "operation_status": "ENABLE",
@@ -143,7 +161,7 @@
     },
     {
       "ad_id": "1861694074987874",
-      "ad_name": "POV: The bank just rejected your loan and you don't know what to do \ud83d\ude2c This is what most people don't know \u2014 there's a smarter backup plan. Watch till the end. No sales calls. No pressure. Free to use. Rates from 1.88% (T&Cs apply). Don't say never tell you \ud83e\udd37 #personalloan #singapore #sgmoney #moneytok #financetok #loansg #foryou #fyp #sgfyp #adultingsg",
+      "ad_name": "POV: The bank just rejected your loan and you don't know what to do 😬 This is what most people don't know — there's a smarter backup plan. Watch till the end. No sales calls. No pressure. Free to use. Rates from 1.88% (T&Cs apply). Don't say never tell you 🤷 #personalloan #singapore #sgmoney #moneytok #financetok #loansg #foryou #fyp #sgfyp #adultingsg",
       "adgroup_id": "1861430108768257",
       "campaign_id": "1861430061161953",
       "operation_status": "ENABLE",
@@ -152,7 +170,7 @@
     },
     {
       "ad_id": "1861694072293442",
-      "ad_name": "Wait \u2014 you can get cashback on a personal loan now?? \ud83d\udc40 PickMeALoan just launched rewards on every successful loan. $50 minimum or 1% back. Borrow $20K, get $200 back. Redeem at Grab, Shopee, FairPrice, Lazada \ud83d\uded2 Free to use. No catch. #cashback #personalloan #singapore #moneytok #financetok #sgmoney #fyp #foryou #sgfyp #lifehacksg",
+      "ad_name": "Wait — you can get cashback on a personal loan now?? 👀 PickMeALoan just launched rewards on every successful loan. $50 minimum or 1% back. Borrow $20K, get $200 back. Redeem at Grab, Shopee, FairPrice, Lazada 🛒 Free to use. No catch. #cashback #personalloan #singapore #moneytok #financetok #sgmoney #fyp #foryou #sgfyp #lifehacksg",
       "adgroup_id": "1861430108768257",
       "campaign_id": "1861430061161953",
       "operation_status": "ENABLE",
@@ -161,7 +179,7 @@
     },
     {
       "ad_id": "1861694072282658",
-      "ad_name": "Bank rejected their loan. Here's what they did next \ud83d\udc47 Applied on PickMeALoan \u2192 Got offers on WhatsApp \u2192 Collected cash in 1 hour via PayNow \ud83e\udd2f No sales calls. Free to use. #personalloan #singapore #moneytok #financetok #sgmoney #fyp #foryou #sgfyp #storytime",
+      "ad_name": "Bank rejected their loan. Here's what they did next 👇 Applied on PickMeALoan → Got offers on WhatsApp → Collected cash in 1 hour via PayNow 🤯 No sales calls. Free to use. #personalloan #singapore #moneytok #financetok #sgmoney #fyp #foryou #sgfyp #storytime",
       "adgroup_id": "1861430108768257",
       "campaign_id": "1861430061161953",
       "operation_status": "ENABLE",
@@ -170,6 +188,58 @@
     }
   ],
   "metrics": [
+    {
+      "ad_id": "1863143599228257",
+      "spend": 0.0,
+      "impressions": 0,
+      "clicks": 0,
+      "ctr": 0.0,
+      "cpc": 0.0,
+      "cpm": 0.0,
+      "conversion": 0,
+      "cost_per_conversion": null,
+      "conversion_rate": 0.0,
+      "reach": 0,
+      "frequency": 0.0,
+      "video_play_actions": 0,
+      "video_watched_2s": 0,
+      "video_watched_6s": 0,
+      "video_views_p25": 0,
+      "video_views_p50": 0,
+      "video_views_p75": 0,
+      "video_views_p100": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "follows": 0,
+      "profile_visits": 0
+    },
+    {
+      "ad_id": "1863143599249425",
+      "spend": 0.0,
+      "impressions": 0,
+      "clicks": 0,
+      "ctr": 0.0,
+      "cpc": 0.0,
+      "cpm": 0.0,
+      "conversion": 0,
+      "cost_per_conversion": null,
+      "conversion_rate": 0.0,
+      "reach": 0,
+      "frequency": 0.0,
+      "video_play_actions": 0,
+      "video_watched_2s": 0,
+      "video_watched_6s": 0,
+      "video_views_p25": 0,
+      "video_views_p50": 0,
+      "video_views_p75": 0,
+      "video_views_p100": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "follows": 0,
+      "profile_visits": 0
+    },
     {
       "ad_id": "1861694072282658",
       "spend": 12.22,
