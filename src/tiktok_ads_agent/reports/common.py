@@ -20,6 +20,7 @@ from tiktok_ads_agent.models.schemas import (
     CampaignMetadata,
     Snapshot,
 )
+from tiktok_ads_agent.state.persistence import load_snapshot
 
 # Metrics requested on every report. TikTok rejects unknown fields so
 # keep this aligned with Marketing API v1.3 Reporting docs.
@@ -147,6 +148,17 @@ def fetch_snapshot(
         ad_ids=[ad.ad_id for ad in ads],
     )
     metrics = [_metric_from_row(row) for row in report_payload.get("list", [])]
+
+    # Merge with any existing snapshot for the same period so historical
+    # rows aren't lost when TikTok drops deleted ads from a re-pull.
+    # Strategy: new rows take precedence for ad_ids present in both;
+    # old rows with spend > 0 are preserved for ad_ids missing in new.
+    existing = load_snapshot(cadence, period_id)
+    if existing is not None:
+        new_ids = {m.ad_id for m in metrics}
+        for old in existing.metrics:
+            if old.ad_id not in new_ids and old.spend > 0:
+                metrics.append(old)
 
     return Snapshot(
         cadence=cadence,
