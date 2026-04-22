@@ -27,6 +27,11 @@ name: Daily TikTok Ads Report
 #     rather than per ACO variant, with a separate Creative
 #     Variants section that surfaces only when a label has >1
 #     delivering variant. Matches the ad-level view in the UI.
+#   - bump 8: pass filtering.ad_ids into /report/integrated/get/
+#     so deleted ads retain their historical metrics. Current
+#     snapshot lost POV's 3 conversions from 2026-04-21 the
+#     moment POV was deleted; re-pull with the filter restores
+#     the full 7-conversion day.
 #   - bump 4: refresh ad metadata — user reports legacy caption-named
 #     ads no longer in Ads Manager; confirm via fresh /ad/get/ pull
 

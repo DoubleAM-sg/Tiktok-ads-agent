@@ -321,11 +321,16 @@ def build_telegram_summary(
     # creative_registry value) collapses the variants back into the
     # ad-level view the user manages. Per-variant detail appears in
     # the Creative Variants section below.
-    active_ads = {ad.ad_id for ad in snapshot.ads if ad.operation_status == "ENABLE"}
+    #
+    # Include any ad that had spend in the reporting window regardless
+    # of current operation/secondary status — an ad deleted today still
+    # spent real money yesterday and those conversions belong in
+    # yesterday's report.
+    spending_ads = {m.ad_id for m in snapshot.metrics if m.spend > 0}
     ad_to_group = {ad.ad_id: ad.adgroup_id for ad in snapshot.ads}
     group_rows: dict[str, list] = {}
     for m in snapshot.metrics:
-        if m.ad_id not in active_ads:
+        if m.ad_id not in spending_ads:
             continue
         gid = ad_to_group.get(m.ad_id) or "(no adgroup)"
         group_rows.setdefault(gid, []).append(m)
@@ -393,7 +398,7 @@ def build_telegram_summary(
     # performance. Disappears once auto-generation is turned off and
     # each label resolves to a single ad_id.
     variant_rows = [
-        m for m in snapshot.metrics if m.ad_id in active_ads
+        m for m in snapshot.metrics if m.ad_id in spending_ads
     ]
     # Only render this section when at least one label has >1 variant
     by_label_count: dict[str, int] = {}
