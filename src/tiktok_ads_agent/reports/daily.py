@@ -337,7 +337,11 @@ def build_telegram_summary(
             gname = (group.adgroup_name if group else None) or gid
             lines.append(f"  {gname}")
             for m in sorted(ms, key=lambda x: x.spend, reverse=True):
-                label = display_names.get(m.ad_id) or m.ad_id
+                base = display_names.get(m.ad_id) or m.ad_id
+                # Always show the ad_id tail so operators can cross-
+                # reference TikTok UI + aggregate-label rows never
+                # collapse two different ads into one visual line.
+                label = f"{base} · …{m.ad_id[-4:]}"
                 hook = (
                     f"hook {m.hook_retention * 100:.0f}%"
                     if m.hook_retention is not None
