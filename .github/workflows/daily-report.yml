@@ -40,6 +40,13 @@ name: Daily TikTok Ads Report
 #   - bump 10: drop Telegram HTML parse_mode — signals block's
 #     literal ``<3d)`` was being parsed as a malformed HTML tag
 #     and returning 400 Bad Request.
+#   - bump 11: clear creative_registry. Old caption-named ads
+#     were Spark Ads (name defaulted to organic post caption);
+#     new ads created in Ads Manager have proper short names. Let
+#     /ad/get/ be the single source of truth for ad names; the
+#     registry remains available as an optional manual override
+#     but is no longer pre-populated with caption → label
+#     mappings that don't exist in TikTok's data.
 #   - bump 4: refresh ad metadata — user reports legacy caption-named
 #     ads no longer in Ads Manager; confirm via fresh /ad/get/ pull
 

@@ -1,5 +1,37 @@
 [
   {
+    "date": "2026-04-22",
+    "week": "2026-W17",
+    "actor": "user",
+    "action": "aco_disabled",
+    "entity_type": "adgroup",
+    "entity_id": null,
+    "entity_name": "all active adgroups",
+    "reason": "Auto-add newly generated assets toggle caused each ad to split into hook/CTA/music variant ad_ids. Disabling so each user-facing ad maps 1:1 to a single ad_id going forward.",
+    "implication": "Creative Variants section will auto-hide as historical variants churn. ad_name from /ad/get/ becomes the single source of truth for labels."
+  },
+  {
+    "date": "2026-04-22",
+    "week": "2026-W17",
+    "actor": "automation",
+    "action": "creative_registry_cleared",
+    "entity_type": "system",
+    "entity_id": null,
+    "entity_name": ".state/creative_registry.json",
+    "reason": "Old caption-named ads (POV / Bank-rejected / Wait) were Spark Ads; their ad_name defaults to the originating organic post caption. Mapping captions to fabricated labels in the registry conflated organic post identity with ad identity. Going forward we trust /ad/get/ ad_name directly; registry remains available as an optional manual override but is empty by default.",
+    "implication": "Old Spark Ads render with truncated captions until they churn. New direct-to-Ads-Manager ads render with the short name the user typed."
+  },
+  {
+    "date": "2026-04-22",
+    "week": "2026-W17",
+    "actor": "user",
+    "action": "new_adgroup_created",
+    "entity_type": "adgroup",
+    "entity_id": "1863143710470449",
+    "entity_name": "MS+SS Customer reject-Narrow",
+    "notes": "4 new ads launched pending TikTok review: PMAL UGC (1863143710471201), Cashback Launch (1863143710471217), Cashback - $50 Don't Know (1863143710471169), Cashback - Already Borrowing (1863143710471185). All 'Your own content / TikTok account' sourced."
+  },
+  {
     "date": "2026-04-21",
     "week": "2026-W17",
     "actor": "user",
