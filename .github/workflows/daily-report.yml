@@ -7,6 +7,9 @@ name: Daily TikTok Ads Report
 #
 # Retrigger log:
 #   - bump 1: first live run after pipeline scaffold merged
+#   - bump 2: scheduled 2026-04-21 21:00 UTC cron did not produce a
+#     snapshot on main; retriggering to fetch 2026-04-21 data and
+#     surface any failure signal via the notify step
 
 on:
   schedule:
