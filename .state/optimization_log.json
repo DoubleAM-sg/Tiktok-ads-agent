@@ -2,6 +2,61 @@
   {
     "date": "2026-04-22",
     "week": "2026-W17",
+    "actor": "automation",
+    "action": "creative_registry_repopulated",
+    "entity_type": "system",
+    "entity_id": null,
+    "entity_name": ".state/creative_registry.json",
+    "reason": "User confirmed our OAuth token is stuck on the Spark-Ad shadow copies for the foreseeable future (pending Creative/Audience/Pixel Management scopes). Map each shadow ad_id to the short label shown in Ads Manager. 9 entries covering Lookalike-Rejected adgroup (legacy POV/Bank-rejected/Wait) + MS+SS Customer reject-Narrow adgroup (new 4 ads + 2 earlier same-day additions).",
+    "implication": "Pairings inferred from caption content (PMAL UGC / Cashback Launch / Cashback - $50 Don't Know / Cashback - Already Borrowing). User will spot any mismatches and correct on next daily."
+  },
+  {
+    "date": "2026-04-22",
+    "week": "2026-W17",
+    "actor": "automation",
+    "action": "signals_section_removed",
+    "entity_type": "system",
+    "entity_id": null,
+    "entity_name": "daily report",
+    "reason": "CTR-drop + fatigue thresholds don't fire meaningfully with <1 week of history; the new-ad (<3d) signal was just repeating user actions. Removing the Signals section and the _detect_signals helper to keep the daily Telegram post focused on actual performance data.",
+    "implication": "Revive once the account has 2-3 weeks of history and the thresholds have signal to give."
+  },
+  {
+    "date": "2026-04-22",
+    "week": "2026-W17",
+    "actor": "automation",
+    "action": "telegram_parse_mode_dropped",
+    "entity_type": "system",
+    "entity_id": null,
+    "entity_name": "notifications/telegram.py",
+    "reason": "parse_mode=HTML caused Telegram to 400 on literal '<' chars in the signals block and ad captions. Our messages don't use any HTML formatting, so no parse_mode is the safe default.",
+    "implication": "Future ad captions containing < / > / & ship unescaped without problems."
+  },
+  {
+    "date": "2026-04-22",
+    "week": "2026-W17",
+    "actor": "automation",
+    "action": "snapshot_merge_on_fetch",
+    "entity_type": "system",
+    "entity_id": null,
+    "entity_name": "reports/common.fetch_snapshot",
+    "reason": "TikTok's /report/integrated/get/ silently drops rows for ads whose secondary_status=AD_STATUS_DELETE, wiping historical conversions the moment an ad is removed. POV's 3 conversions on 2026-04-21 disappeared from the daily total the moment POV was deleted mid-2026-04-22.",
+    "implication": "fetch_snapshot() now unions new rows with prior on-disk snapshot metrics; new wins on collision, old spend>0 rows are preserved. Once captured for a day, metrics stay. Bootstrapped POV's 2026-04-21 row from commit 85d673c."
+  },
+  {
+    "date": "2026-04-22",
+    "week": "2026-W17",
+    "actor": "automation",
+    "action": "ad_get_filter_widened",
+    "entity_type": "system",
+    "entity_id": null,
+    "entity_name": "core.client.list_ads",
+    "reason": "Default primary_status=STATUS_NOT_DELETE hid ads the Ads Manager UI was showing. Pass STATUS_ALL explicitly; also capture secondary_status field.",
+    "implication": "Full roster visible (deleted + pending + delivering). Does not resolve the token-scope issue that blocks direct-ad ad_ids — those remain (not returned) even with STATUS_ALL."
+  },
+  {
+    "date": "2026-04-22",
+    "week": "2026-W17",
     "actor": "user",
     "action": "aco_disabled",
     "entity_type": "adgroup",
