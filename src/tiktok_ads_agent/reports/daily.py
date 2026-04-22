@@ -15,17 +15,23 @@ from zoneinfo import ZoneInfo
 
 from tiktok_ads_agent.core.settings import Settings
 from tiktok_ads_agent.models.schemas import Snapshot
+from typing import Any
+
 from tiktok_ads_agent.reports.common import (
     aggregate_by_adgroup,
     aggregate_by_campaign,
     aggregate_by_creative,
-    ad_name_map,
+    display_name_map,
     fetch_mtd_campaign_totals,
     fetch_snapshot,
     short_label,
     totals,
 )
-from tiktok_ads_agent.state.persistence import load_snapshot, save_snapshot
+from tiktok_ads_agent.state.persistence import (
+    load_creative_registry,
+    load_snapshot,
+    save_snapshot,
+)
 
 SGT = ZoneInfo("Asia/Singapore")
 CREATIVE_LABEL_LEN = 32
@@ -105,7 +111,7 @@ def _detect_signals(
     *,
     prior_daily: list[Snapshot],
     today: datetime,
-    names: dict[str, str],
+    display_names: dict[str, str],
 ) -> list[str]:
     """Flag fatigue, CTR drops, understaffed ad groups, and new ads.
 
@@ -119,7 +125,7 @@ def _detect_signals(
     # Frequency ≥ 3 = Corey Haines fatigue signal.
     for m in snapshot.metrics:
         if m.frequency >= FREQUENCY_FATIGUE:
-            label = short_label(names.get(m.ad_id), AD_LABEL_LEN)
+            label = display_names.get(m.ad_id) or m.ad_id
             flags.append(f"  · freq {m.frequency:.1f} on {label} (fatigue)")
 
     # Per-ad CTR drop vs own N-day avg.
@@ -135,7 +141,7 @@ def _detect_signals(
                 continue
             avg = sum(hist) / len(hist)
             if avg > 0 and m.ctr < avg * CTR_DROP_RATIO:
-                label = short_label(names.get(m.ad_id), AD_LABEL_LEN)
+                label = display_names.get(m.ad_id) or m.ad_id
                 delta = (m.ctr - avg) / avg * 100.0
                 flags.append(
                     f"  · CTR drop on {label}: "
@@ -171,7 +177,10 @@ def _detect_signals(
         if created and created >= cutoff:
             new_ads.append(ad)
     if new_ads:
-        labels = ", ".join(short_label(a.ad_name, 22) for a in new_ads[:3])
+        labels = ", ".join(
+            (display_names.get(a.ad_id) or short_label(a.ad_name, 22))
+            for a in new_ads[:3]
+        )
         suffix = "" if len(new_ads) <= 3 else f" +{len(new_ads) - 3} more"
         flags.append(f"  · new (<{NEW_AD_DAYS}d): {len(new_ads)} — {labels}{suffix}")
 
@@ -184,24 +193,30 @@ def build_telegram_summary(
     prior_daily: list[Snapshot] | None = None,
     mtd: dict[str, dict[str, float]] | None = None,
     today: date | None = None,
+    registry: dict[str, dict[str, Any]] | None = None,
 ) -> str:
     """Format the daily Telegram message.
 
     ``prior_daily`` powers the "vs Nd avg" CPA delta; ``mtd`` populates
-    the MTD Pacing section. Both are optional so the function stays
-    pure and testable; :func:`run` wires up the real data.
+    the MTD Pacing section; ``registry`` maps ``ad_id`` to the short
+    label shown in every section (falls back to truncated ``ad_name``
+    when absent). All three are optional so the function stays pure and
+    testable; :func:`run` wires up the real data.
     """
 
     prior_daily = prior_daily or []
     mtd = mtd or {}
     today = today or datetime.now(SGT).date()
+    registry = registry or {}
     data_date = date.fromisoformat(snapshot.start_date)
 
     t = totals(snapshot)
-    names = ad_name_map(snapshot)
+    display_names = display_name_map(snapshot, registry=registry, max_len=AD_LABEL_LEN)
     by_campaign = aggregate_by_campaign(snapshot)
     by_adgroup = aggregate_by_adgroup(snapshot)
-    by_creative = aggregate_by_creative(snapshot, label_len=CREATIVE_LABEL_LEN)
+    by_creative = aggregate_by_creative(
+        snapshot, registry=registry, label_len=CREATIVE_LABEL_LEN
+    )
 
     campaigns_by_id = {c.campaign_id: c for c in snapshot.campaigns}
     adgroups_by_id = {g.adgroup_id: g for g in snapshot.adgroups}
@@ -252,7 +267,10 @@ def build_telegram_summary(
     # ── Signals (fatigue, CTR drop, 3-2-1, new ads) ─────────────────
     today_dt = datetime.combine(today, datetime.min.time(), tzinfo=SGT)
     signals = _detect_signals(
-        snapshot, prior_daily=prior_daily, today=today_dt, names=names
+        snapshot,
+        prior_daily=prior_daily,
+        today=today_dt,
+        display_names=display_names,
     )
     if signals:
         lines.append("")
@@ -319,7 +337,7 @@ def build_telegram_summary(
             gname = (group.adgroup_name if group else None) or gid
             lines.append(f"  {gname}")
             for m in sorted(ms, key=lambda x: x.spend, reverse=True):
-                label = short_label(names.get(m.ad_id), AD_LABEL_LEN)
+                label = display_names.get(m.ad_id) or m.ad_id
                 hook = (
                     f"hook {m.hook_retention * 100:.0f}%"
                     if m.hook_retention is not None
@@ -418,6 +436,13 @@ def run(settings: Settings) -> tuple[Snapshot, str]:
     prior = _load_prior_snapshots(target, days=7)
     month_start = target.replace(day=1).isoformat()
     mtd = fetch_mtd_campaign_totals(settings, month_start=month_start, end_date=period_id)
+    registry = load_creative_registry()
 
-    message = build_telegram_summary(snapshot, prior_daily=prior, mtd=mtd, today=today)
+    message = build_telegram_summary(
+        snapshot,
+        prior_daily=prior,
+        mtd=mtd,
+        today=today,
+        registry=registry,
+    )
     return snapshot, message
