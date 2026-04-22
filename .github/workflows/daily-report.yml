@@ -37,6 +37,9 @@ name: Daily TikTok Ads Report
 #     prior on-disk snapshot rows into new fetches so historical
 #     metrics persist across ad deletions; bootstrap POV's 3
 #     conversions back from commit 85d673c.
+#   - bump 10: drop Telegram HTML parse_mode — signals block's
+#     literal ``<3d)`` was being parsed as a malformed HTML tag
+#     and returning 400 Bad Request.
 #   - bump 4: refresh ad metadata — user reports legacy caption-named
 #     ads no longer in Ads Manager; confirm via fresh /ad/get/ pull
 
