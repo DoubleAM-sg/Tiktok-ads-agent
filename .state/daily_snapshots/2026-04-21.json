@@ -3,7 +3,7 @@
   "period_id": "2026-04-21",
   "start_date": "2026-04-21",
   "end_date": "2026-04-21",
-  "generated_at": "2026-04-22T03:52:45+00:00",
+  "generated_at": "2026-04-22T04:08:24+00:00",
   "advertiser_id": "7624416803980345360",
   "campaigns": [
     {
@@ -43,12 +43,112 @@
   ],
   "ads": [
     {
+      "ad_id": "1862747290699905",
+      "ad_name": "Auto-generated-CTA_POV-1-20260417_120101-4",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELETE",
+      "create_time": "2026-04-17 19:30:49"
+    },
+    {
+      "ad_id": "1862737084942466",
+      "ad_name": "762549935884828-New_Hook-4-20260417_120129-5",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELETE",
+      "create_time": "2026-04-17 16:48:43"
+    },
+    {
+      "ad_id": "1862737084941458",
+      "ad_name": "Auto-generated-CTA_POV-1-20260417_120101-4",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELETE",
+      "create_time": "2026-04-17 16:48:43"
+    },
+    {
+      "ad_id": "1862718945092833",
+      "ad_name": "auto carousel generation_1iq3vxuv_1",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELETE",
+      "create_time": "2026-04-17 12:00:17"
+    },
+    {
+      "ad_id": "1862718945092817",
+      "ad_name": "auto carousel generation_6tkst4m6_0",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELETE",
+      "create_time": "2026-04-17 12:00:17"
+    },
+    {
+      "ad_id": "1862718945092801",
+      "ad_name": "762549935884828-New_Hook-4-20260417_022957-5",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELETE",
+      "create_time": "2026-04-17 12:00:17"
+    },
+    {
+      "ad_id": "1862718945092081",
+      "ad_name": "Auto-generated-CTA_POV-2-20260417_022945-4",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELETE",
+      "create_time": "2026-04-17 12:00:17"
+    },
+    {
+      "ad_id": "1862718945092065",
+      "ad_name": "762549960936849-Music_Refresh-0-20260417_022903-2",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELETE",
+      "create_time": "2026-04-17 12:00:17"
+    },
+    {
+      "ad_id": "1862718945092049",
+      "ad_name": "Auto-generated-CTA_POV-1-20260417_022945-3",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELETE",
+      "create_time": "2026-04-17 12:00:17"
+    },
+    {
+      "ad_id": "1862715439942993",
+      "ad_name": "PMAL - Who is PMAL_ v3_SnZmTvWB.mp4",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELETE",
+      "create_time": "2026-04-17 11:04:57"
+    },
+    {
       "ad_id": "1862715093286945",
       "ad_name": "POV: The bank just rejected your loan and you don't know what to do 😬 This is what most people don't know — there's a smarter backup plan. Watch till the end. No sales calls. No pressure. Free to use. Rates from 1.88% (T&Cs apply). Don't say never tell you 🤷 #personalloan #singapore #sgmoney #moneytok #financetok #loansg #foryou #fyp #sgfyp #adultingsg",
       "adgroup_id": "1861430108768257",
       "campaign_id": "1861430061161953",
       "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELIVERY_OK",
       "create_time": "2026-04-17 10:59:07"
+    },
+    {
+      "ad_id": "1861694074987874",
+      "ad_name": "POV: The bank just rejected your loan and you don't know what to do 😬 This is what most people don't know — there's a smarter backup plan. Watch till the end. No sales calls. No pressure. Free to use. Rates from 1.88% (T&Cs apply). Don't say never tell you 🤷 #personalloan #singapore #sgmoney #moneytok #financetok #loansg #foryou #fyp #sgfyp #adultingsg",
+      "adgroup_id": "1861430108768257",
+      "campaign_id": "1861430061161953",
+      "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELETE",
+      "create_time": "2026-04-06 04:30:30"
     },
     {
       "ad_id": "1861694072293442",
@@ -56,6 +156,7 @@
       "adgroup_id": "1861430108768257",
       "campaign_id": "1861430061161953",
       "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELIVERY_OK",
       "create_time": "2026-04-06 04:30:28"
     },
     {
@@ -64,6 +165,7 @@
       "adgroup_id": "1861430108768257",
       "campaign_id": "1861430061161953",
       "operation_status": "ENABLE",
+      "secondary_status": "AD_STATUS_DELIVERY_OK",
       "create_time": "2026-04-06 04:30:28"
     }
   ],
