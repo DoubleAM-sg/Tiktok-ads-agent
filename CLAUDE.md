@@ -188,6 +188,51 @@ Append-only, dated. Add new entries **above** the earlier ones (reverse-chronolo
 
 ---
 
+### 2026-W17 — Daily report hardened; ACO off; API/UI ad_id mismatch proven
+
+**What broke / how we fixed it**
+
+- **Scheduled cron skipped.** The 2026-04-21 21:00 UTC scheduled daily silently didn't execute (GH Actions peak-time skip). Workflow has a failure-notify step but it never reached that. Retrigger via path-filter push to `.github/workflows/daily-report.yml` works as a manual bootstrap; cron is best-effort, not guaranteed.
+- **Telegram 400 on HTML parse_mode.** Our signals block emitted literal `(<3d):` which Telegram's HTML parser rejected as a malformed tag. Dropped `parse_mode` entirely — report is plain text + emojis, no HTML formatting needed, and ad captions containing `<` / `>` / `&` are now safe to forward unescaped.
+- **`/ad/get/` default hides ads.** Default is `filtering.primary_status=STATUS_NOT_DELETE`, which hides deleted/appeal-review objects. Pass `STATUS_ALL` explicitly in every `list_ads()` call.
+- **`/report/integrated/get/` silently drops deleted ads.** Even with `filtering.ad_ids=[...]` and `STATUS_ALL`, TikTok still excludes rows for ads whose `secondary_status=AD_STATUS_DELETE`. Historical conversion data disappears the moment an ad is deleted. Defense: `fetch_snapshot()` now merges with the on-disk snapshot for the same period — new rows win on collision, old rows with `spend > 0` are preserved for ad_ids missing from the new pull. Once metrics hit disk for a given day they stay.
+- **Ad Performance filter was too strict.** `operation_status == "ENABLE"` excluded ads deleted mid-day even though they spent real money earlier in the reporting window. Relaxed to "had spend in the window" so yesterday's paused ads still show yesterday's data.
+
+**API/UI ad_id mismatch — confirmed token-scope limitation**
+
+- Ads Manager UI shows ad_ids our `/ad/get/` cannot see (direct lookup via `filtering.ad_ids` returns `(not returned)` for them). Our token is restricted to the **Spark-Ad shadow copies** TikTok creates when a direct-to-Ads-Manager ad references an organic post.
+- Shadow copies share the organic post's caption as `ad_name`; direct ads (invisible to us) carry the short names the user typed ("PMAL UGC", "Cashback Launch", "Cashback - $50 Don't Know", "Cashback - Already Borrowing").
+- Root cause: pending Creative / Audience / Pixel Management OAuth scopes from W16. Until those land, we label shadow ad_ids manually via `.state/creative_registry.json` to match what the user sees in Ads Manager.
+- **Revisit once scopes land** — should unlock direct ad_ids and kill the registry mapping.
+
+**ACO (Auto-add newly generated assets) disabled**
+
+- When ON, TikTok auto-generates hook/CTA/music variant ad_ids under each user-facing ad, each with its own metrics row. Our 2026-04-17 roster had 11 such variants (`Auto-generated-CTA_*`, `New_Hook-*`, `Music_Refresh-*`, `auto carousel generation_*`).
+- User turned it off in Ads Manager → new ads will map 1:1 to one ad_id each. Historical variants will churn out.
+- Daily's Ad Performance aggregates by registry label so variant noise collapsed into the parent ad's row; Creative Variants section auto-hides once each label resolves to a single ad_id.
+
+**Reporting structure settled**
+
+- Sections: header → conversions headline → budget + CPA → Campaign Performance → Converting ad groups → Ad Performance (by label, nested under adgroup) → Creative Variants (only when a label has >1 delivering variant) → MTD Pacing (campaign-level aggregate, separate API call).
+- **Signals section removed.** CTR-drop / fatigue thresholds are meaningless with <1 week of history; `new (<3d)` just repeated user actions. Helper `_detect_signals` gone. Revive if/when the account matures and the thresholds have something to say.
+- `creative_registry.json` accepts `"ad_id": "label"` or `"ad_id": {"label": ..., "angle": ...}`. Current 9-entry map covers both the Lookalike-Rejected adgroup and the new `MS+SS Customer reject-Narrow` adgroup.
+
+**Campaign state (end of 2026-04-22)**
+
+- 1 campaign: `Leads-Manual`, $20/day dynamic daily budget
+- 2 adgroups enabled: `Leads-Lookalike-before 1jan2025 rejected` (original) + `MS+SS Customer reject-Narrow` (new today, 4 ads pending TikTok review under `1863143710470449`)
+- 3 delivering ads on 2026-04-21: PMAL UGC (POV variant + Bank-rejected variant = 6 conv combined) + Cashback Launch (1 conv). Total 7 conv at $3.57 blended CPA.
+- POV (1862715093286945) deleted mid-2026-04-22; merge-with-existing preserves its yesterday metrics.
+
+**Open / to revisit**
+
+- **Creative / Audience / Pixel Management OAuth scopes** still pending TikTok review. Re-check ~Apr 26; re-auth and drop the shadow-copy workaround once granted.
+- **Pending TikTok review** on the 4 new MS+SS ads. Once they deliver, verify registry label pairings (inferred from caption content — user to confirm/correct).
+- **Signals reintroduction** — once there are 2-3 weeks of history, CTR-drop + fatigue thresholds become trustworthy. Revive the section (or a trimmed version) at that point.
+- **Pangle exclusion** still blocked on Smart+ adgroups via API; keep doing it in Ads Manager UI for Smart+.
+
+---
+
 ### 2026-W16 — Baseline established, first snapshot committed
 
 **Setup state at end of week**
