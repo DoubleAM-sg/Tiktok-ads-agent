@@ -1,1 +1,11 @@
-{}
+{
+  "1861694072282658": {"label": "PMAL UGC", "angle": "social-proof"},
+  "1861694072293442": {"label": "Cashback Launch", "angle": "cashback-reward"},
+  "1862715093286945": {"label": "PMAL UGC", "angle": "acknowledge-redirect"},
+  "1863143599228257": {"label": "Cashback - Already Borrowing", "angle": "cashback-already-borrowing"},
+  "1863143599249425": {"label": "Cashback - $50 Don't Know", "angle": "cashback-50-dont-know"},
+  "1863144191268033": {"label": "Cashback - $50 Don't Know", "angle": "cashback-50-dont-know"},
+  "1863144191295729": {"label": "Cashback - Already Borrowing", "angle": "cashback-already-borrowing"},
+  "1863144191312097": {"label": "PMAL UGC", "angle": "social-proof"},
+  "1863144195355890": {"label": "Cashback Launch", "angle": "cashback-reward"}
+}

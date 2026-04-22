@@ -37,15 +37,6 @@ SGT = ZoneInfo("Asia/Singapore")
 CREATIVE_LABEL_LEN = 32
 AD_LABEL_LEN = 40
 
-# Signal thresholds — benchmarked against the account's own history, not
-# external industry figures.
-FREQUENCY_FATIGUE = 3.0          # Corey Haines seen-and-ignored
-CTR_DROP_RATIO = 0.5             # today < 50% of own N-day avg
-CTR_DROP_MIN_HISTORY = 3         # need at least N prior days to trust the avg
-NEW_AD_DAYS = 3                  # <3 days since create_time = "new"
-THREE_TWO_ONE_TARGET = 3         # active ads per ad group
-
-
 def yesterday_sgt() -> date:
     """Return 'yesterday' in Singapore — the advertiser's reporting timezone."""
 
@@ -85,106 +76,6 @@ def _campaign_daily_budget(
     if budget > 0 and "DAILY" in mode:
         return float(budget)
     return None
-
-
-def _parse_tiktok_ts(value: str | None) -> datetime | None:
-    """Parse TikTok's ``create_time`` / ``modify_time`` strings.
-
-    The API emits naive ``"YYYY-MM-DD HH:MM:SS"`` in the advertiser's
-    timezone. Returns a tz-aware datetime in SGT, or ``None`` on any
-    parse failure (we treat missing timestamps as unknown, not new).
-    """
-
-    if not value:
-        return None
-    try:
-        parsed = datetime.fromisoformat(value.replace("T", " ").rstrip("Z"))
-    except ValueError:
-        return None
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=SGT)
-    return parsed
-
-
-def _detect_signals(
-    snapshot: Snapshot,
-    *,
-    prior_daily: list[Snapshot],
-    today: datetime,
-    display_names: dict[str, str],
-) -> list[str]:
-    """Flag fatigue, CTR drops, understaffed ad groups, and new ads.
-
-    All thresholds compare against the account's own history — no
-    external benchmarks. Requires ``CTR_DROP_MIN_HISTORY`` prior daily
-    snapshots before it will call out a CTR drop.
-    """
-
-    flags: list[str] = []
-
-    # Frequency ≥ 3 = Corey Haines fatigue signal.
-    for m in snapshot.metrics:
-        if m.frequency >= FREQUENCY_FATIGUE:
-            label = display_names.get(m.ad_id) or m.ad_id
-            flags.append(f"  · freq {m.frequency:.1f} on {label} (fatigue)")
-
-    # Per-ad CTR drop vs own N-day avg.
-    if len(prior_daily) >= CTR_DROP_MIN_HISTORY:
-        history: dict[str, list[float]] = {}
-        for snap in prior_daily:
-            for m in snap.metrics:
-                if m.impressions > 0:
-                    history.setdefault(m.ad_id, []).append(m.ctr)
-        for m in snapshot.metrics:
-            hist = history.get(m.ad_id, [])
-            if len(hist) < CTR_DROP_MIN_HISTORY or m.impressions == 0:
-                continue
-            avg = sum(hist) / len(hist)
-            if avg > 0 and m.ctr < avg * CTR_DROP_RATIO:
-                label = display_names.get(m.ad_id) or m.ad_id
-                delta = (m.ctr - avg) / avg * 100.0
-                flags.append(
-                    f"  · CTR drop on {label}: "
-                    f"{m.ctr:.2f}% vs {avg:.2f}% avg ({delta:+.0f}%)"
-                )
-
-    # 3-2-1 check and new-ad (<3d) annotation.
-    active_by_group: dict[str, list] = {}
-    for ad in snapshot.ads:
-        if ad.operation_status == "ENABLE" and ad.adgroup_id:
-            active_by_group.setdefault(ad.adgroup_id, []).append(ad)
-
-    adgroups_by_id = {g.adgroup_id: g for g in snapshot.adgroups}
-    understaffed = [
-        (gid, len(ads))
-        for gid, ads in active_by_group.items()
-        if len(ads) < THREE_TWO_ONE_TARGET
-    ]
-    if understaffed:
-        parts = []
-        for gid, count in understaffed:
-            group = adgroups_by_id.get(gid)
-            gname = (group.adgroup_name if group else None) or gid
-            parts.append(f"{gname} ({count}/{THREE_TWO_ONE_TARGET})")
-        flags.append("  · 3-2-1 below target — " + ", ".join(parts))
-
-    cutoff = today - timedelta(days=NEW_AD_DAYS)
-    new_ads = []
-    for ad in snapshot.ads:
-        if ad.operation_status != "ENABLE":
-            continue
-        created = _parse_tiktok_ts(ad.create_time)
-        if created and created >= cutoff:
-            new_ads.append(ad)
-    if new_ads:
-        labels = ", ".join(
-            (display_names.get(a.ad_id) or short_label(a.ad_name, 22))
-            for a in new_ads[:3]
-        )
-        suffix = "" if len(new_ads) <= 3 else f" +{len(new_ads) - 3} more"
-        flags.append(f"  · new (<{NEW_AD_DAYS}d): {len(new_ads)} — {labels}{suffix}")
-
-    return flags
 
 
 def build_telegram_summary(
@@ -263,19 +154,6 @@ def build_telegram_summary(
             budget_bits.append(f"({arrow} {delta:+.1f}% vs {len(prior_cpas)}d avg)")
 
     lines.append(" · ".join(budget_bits))
-
-    # ── Signals (fatigue, CTR drop, 3-2-1, new ads) ─────────────────
-    today_dt = datetime.combine(today, datetime.min.time(), tzinfo=SGT)
-    signals = _detect_signals(
-        snapshot,
-        prior_daily=prior_daily,
-        today=today_dt,
-        display_names=display_names,
-    )
-    if signals:
-        lines.append("")
-        lines.append("⚠️ Signals")
-        lines.extend(signals)
 
     # ── Campaign Performance ────────────────────────────────────────
     if by_campaign:

@@ -47,6 +47,12 @@ name: Daily TikTok Ads Report
 #     registry remains available as an optional manual override
 #     but is no longer pre-populated with caption → label
 #     mappings that don't exist in TikTok's data.
+#   - bump 12: user confirmed token scope will keep us on the
+#     Spark-Ad shadow copies for the foreseeable future, so
+#     repopulate the registry mapping each shadow ad_id to the
+#     short label they manage in Ads Manager. Also drops the
+#     Signals section — thresholds are too noisy / unactionable
+#     for a young account.
 #   - bump 4: refresh ad metadata — user reports legacy caption-named
 #     ads no longer in Ads Manager; confirm via fresh /ad/get/ pull
 
