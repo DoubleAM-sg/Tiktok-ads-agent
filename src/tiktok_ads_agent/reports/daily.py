@@ -313,7 +313,14 @@ def build_telegram_summary(
                 f"  {name} — {int(row['conversion'])} conv, ${row['spend']:.2f}"
             )
 
-    # ── Ad Performance (grouped by ad group) ────────────────────────
+    # ── Ad Performance (nested by ad group, aggregated by ad label) ──
+    #
+    # TikTok ACO auto-generates hook/CTA/music variants under a single
+    # user-facing ad; each variant gets its own ad_id but the user only
+    # sees the parent "Ad" in the UI. Aggregating by display label (the
+    # creative_registry value) collapses the variants back into the
+    # ad-level view the user manages. Per-variant detail appears in
+    # the Creative Variants section below.
     active_ads = {ad.ad_id for ad in snapshot.ads if ad.operation_status == "ENABLE"}
     ad_to_group = {ad.ad_id: ad.adgroup_id for ad in snapshot.ads}
     group_rows: dict[str, list] = {}
@@ -326,7 +333,6 @@ def build_telegram_summary(
     if group_rows:
         lines.append("")
         lines.append("📝 Ad Performance")
-        # Sort ad groups by total spend descending
         ordered = sorted(
             group_rows.items(),
             key=lambda kv: sum(m.spend for m in kv[1]),
@@ -336,42 +342,86 @@ def build_telegram_summary(
             group = adgroups_by_id.get(gid)
             gname = (group.adgroup_name if group else None) or gid
             lines.append(f"  {gname}")
-            for m in sorted(ms, key=lambda x: x.spend, reverse=True):
-                base = display_names.get(m.ad_id) or m.ad_id
-                # Always show the ad_id tail so operators can cross-
-                # reference TikTok UI + aggregate-label rows never
-                # collapse two different ads into one visual line.
-                label = f"{base} · …{m.ad_id[-4:]}"
-                hook = (
-                    f"hook {m.hook_retention * 100:.0f}%"
-                    if m.hook_retention is not None
+
+            label_agg: dict[str, dict[str, float]] = {}
+            for m in ms:
+                lbl = display_names.get(m.ad_id) or m.ad_id
+                row = label_agg.setdefault(
+                    lbl,
+                    {
+                        "spend": 0.0,
+                        "impressions": 0,
+                        "clicks": 0,
+                        "conversion": 0,
+                        "video_plays": 0,
+                        "watched_2s": 0,
+                        "variants": 0,
+                    },
+                )
+                row["spend"] += m.spend
+                row["impressions"] += m.impressions
+                row["clicks"] += m.clicks
+                row["conversion"] += m.conversion
+                row["video_plays"] += m.video_play_actions
+                row["watched_2s"] += m.video_watched_2s
+                row["variants"] += 1
+
+            for lbl, a in sorted(label_agg.items(), key=lambda kv: kv[1]["spend"], reverse=True):
+                ctr = (a["clicks"] / a["impressions"] * 100.0) if a["impressions"] else 0.0
+                hook_str = (
+                    f"hook {a['watched_2s'] / a['video_plays'] * 100:.0f}%"
+                    if a["video_plays"]
                     else "hook —"
                 )
-                conv_str = (
-                    f" · {m.conversion} conv · ${m.cost_per_conversion:.2f} CPA"
-                    if m.conversion and m.cost_per_conversion is not None
-                    else f" · {m.conversion} conv"
+                conv = int(a["conversion"])
+                cpa_str = (
+                    f" · {conv} conv · ${a['spend'] / conv:.2f} CPA"
+                    if conv
+                    else f" · {conv} conv"
                 )
+                variants = int(a["variants"])
+                variant_tag = f" [{variants} variants]" if variants > 1 else ""
                 lines.append(
-                    f"    {label}: ${m.spend:.2f} · "
-                    f"{m.clicks} clk · {m.ctr:.2f}% CTR · {hook}{conv_str}"
+                    f"    {lbl}{variant_tag}: ${a['spend']:.2f} · "
+                    f"{int(a['clicks'])} clk · {ctr:.2f}% CTR · {hook_str}{cpa_str}"
                 )
 
-    # ── Creative Performance ────────────────────────────────────────
-    if by_creative:
+    # ── Creative Variants (per-variant ad_id detail) ────────────────
+    #
+    # Auto-generated hooks/CTAs/music variants that ACO produces under
+    # each ad. Useful for spotting which hook is driving a label's
+    # performance. Disappears once auto-generation is turned off and
+    # each label resolves to a single ad_id.
+    variant_rows = [
+        m for m in snapshot.metrics if m.ad_id in active_ads
+    ]
+    # Only render this section when at least one label has >1 variant
+    by_label_count: dict[str, int] = {}
+    for m in variant_rows:
+        lbl = display_names.get(m.ad_id) or m.ad_id
+        by_label_count[lbl] = by_label_count.get(lbl, 0) + 1
+    multi_variant_labels = {lbl for lbl, n in by_label_count.items() if n > 1}
+    if multi_variant_labels:
         lines.append("")
-        lines.append("🎨 Creative Performance")
-        for label, row in sorted(
-            by_creative.items(), key=lambda kv: kv[1]["spend"], reverse=True
-        ):
+        lines.append("🎨 Creative Variants")
+        for m in sorted(variant_rows, key=lambda x: x.spend, reverse=True):
+            base = display_names.get(m.ad_id) or m.ad_id
+            if base not in multi_variant_labels:
+                continue
+            label = f"{base} · …{m.ad_id[-4:]}"
+            hook = (
+                f"hook {m.hook_retention * 100:.0f}%"
+                if m.hook_retention is not None
+                else "hook —"
+            )
             conv_str = (
-                f" · {int(row['conversion'])} conv · ${row['cpa']:.2f} CPA"
-                if row["conversion"]
-                else f" · {int(row['conversion'])} conv"
+                f" · {m.conversion} conv · ${m.cost_per_conversion:.2f} CPA"
+                if m.conversion and m.cost_per_conversion is not None
+                else f" · {m.conversion} conv"
             )
             lines.append(
-                f"  {label}: ${row['spend']:.2f} · "
-                f"{int(row['clicks'])} clicks{conv_str}"
+                f"  {label}: ${m.spend:.2f} · "
+                f"{m.clicks} clk · {m.ctr:.2f}% CTR · {hook}{conv_str}"
             )
 
     # ── MTD Pacing ──────────────────────────────────────────────────
