@@ -12,6 +12,8 @@ name: Daily TikTok Ads Report
 #     surface any failure signal via the notify step
 #   - bump 3: rerun for 2026-04-21 data with the new Meta-style
 #     layout + signals block (PR #19)
+#   - bump 4: refresh ad metadata — user reports legacy caption-named
+#     ads no longer in Ads Manager; confirm via fresh /ad/get/ pull
 
 on:
   schedule:
