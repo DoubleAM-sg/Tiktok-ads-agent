@@ -159,6 +159,40 @@ class TikTokClient:
             page += 1
         return all_rows
 
+    def get_ads_by_ids(self, ad_ids: list[str]) -> list[dict[str, Any]]:
+        """Look up specific ads by id, bypassing the default listing scope.
+
+        Distinct from :meth:`list_ads` because TikTok's listing endpoint
+        silently drops some objects (Spark Ads authored under a different
+        identity, appeal-under-review entries, cross-BC ads). Calling
+        ``/ad/get/`` with ``filtering.ad_ids`` forces the API to tell us
+        whether it recognises each id at all under the current token.
+        """
+
+        fields = [
+            "ad_id",
+            "ad_name",
+            "adgroup_id",
+            "campaign_id",
+            "operation_status",
+            "secondary_status",
+            "create_time",
+            "modify_time",
+        ]
+        params = {
+            "advertiser_id": self.settings.tiktok_advertiser_id,
+            "page": 1,
+            "page_size": max(len(ad_ids), 1),
+            "fields": json.dumps(fields),
+            "filtering": json.dumps(
+                {"primary_status": "STATUS_ALL", "ad_ids": ad_ids}
+            ),
+        }
+        payload = self._request("GET", "/ad/get/", params=params)
+        data = payload["data"]
+        rows: list[dict[str, Any]] = data.get("list", [])
+        return rows
+
     def list_adgroups(self, page_size: int = 50) -> dict[str, Any]:
         """List ad groups — exposes ``optimization_event`` + ``pixel_id``.
 

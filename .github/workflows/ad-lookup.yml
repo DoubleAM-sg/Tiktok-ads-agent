@@ -1,0 +1,66 @@
+name: Ad lookup (one-shot)
+
+# Probes TikTok's /ad/get/ for specific ad_ids to reconcile the Ads
+# Manager UI against what our OAuth token can actually see. Fires on
+# merge when the retrigger log below changes, or on manual dispatch
+# with a comma-separated ad_ids input. Posts results to Telegram.
+#
+# Retrigger log:
+#   - bump 1: reconcile 1861526299270449 / 1861526478744753 /
+#     1861693709755474 (from Ads Manager screenshot — not present
+#     in list_ads even under STATUS_ALL)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ad_ids:
+        description: "Space-separated ad_ids (blank = use hardcoded list)"
+        required: false
+        type: string
+        default: ""
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ad-lookup.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  lookup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    env:
+      TIKTOK_APP_ID: ${{ secrets.TIKTOK_APP_ID }}
+      TIKTOK_APP_SECRET: ${{ secrets.TIKTOK_APP_SECRET }}
+      TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+      TIKTOK_ADVERTISER_ID: ${{ secrets.TIKTOK_ADVERTISER_ID }}
+      TIKTOK_SANDBOX: ${{ secrets.TIKTOK_SANDBOX }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TELEGRAM_TOPIC_ID: ${{ secrets.TELEGRAM_TOPIC_ID }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Resolve ad_ids
+        id: ids
+        run: |
+          INPUT="${{ github.event.inputs.ad_ids }}"
+          if [ -z "$INPUT" ]; then
+            INPUT="1861526299270449 1861526478744753 1861693709755474"
+          fi
+          echo "list=$INPUT" >> "$GITHUB_OUTPUT"
+
+      - name: Look up ads
+        run: tiktok-ads ad lookup ${{ steps.ids.outputs.list }}
