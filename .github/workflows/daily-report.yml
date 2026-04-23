@@ -58,7 +58,12 @@ name: Daily TikTok Ads Report
 
 on:
   schedule:
+    # Primary: 21:00 UTC (05:00 SGT). Backup: 21:20 UTC (05:20 SGT) —
+    # GH Actions silently drops crons during peak load, so the backup
+    # picks up skips. Guard step below short-circuits the backup when
+    # the primary already wrote a snapshot for yesterday-SGT.
     - cron: "0 21 * * *"
+    - cron: "20 21 * * *"
   workflow_dispatch: {}
   push:
     branches: [main]
@@ -92,14 +97,42 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Check if snapshot already exists
+        id: guard
+        run: |
+          python - <<'PY'
+          import os
+          from datetime import datetime, timedelta
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+
+          sgt = ZoneInfo("Asia/Singapore")
+          target = (datetime.now(sgt).date() - timedelta(days=1)).isoformat()
+          path = Path(".state/daily_snapshots") / f"{target}.json"
+          exists = path.exists()
+          print(f"target={target} path={path} exists={exists}")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"already_ran={'true' if exists else 'false'}\n")
+              fh.write(f"target={target}\n")
+          PY
+
+      - name: No-op (snapshot already committed)
+        if: steps.guard.outputs.already_ran == 'true'
+        run: |
+          echo "Daily snapshot for ${{ steps.guard.outputs.target }} is already on main."
+          echo "Primary cron beat us to it — backup run exiting clean."
+
       - name: Install package
+        if: steps.guard.outputs.already_ran != 'true'
         run: pip install -e .
 
       - name: Initialise state directory
+        if: steps.guard.outputs.already_ran != 'true'
         run: tiktok-ads state init
 
       - name: Token health
         id: health
+        if: steps.guard.outputs.already_ran != 'true'
         run: |
           OUTPUT=$(tiktok-ads health 2>&1) || true
           echo "$OUTPUT"
@@ -111,11 +144,11 @@ jobs:
           fi
 
       - name: Run daily report
-        if: steps.health.outputs.status != 'expired'
+        if: steps.guard.outputs.already_ran != 'true' && steps.health.outputs.status != 'expired'
         run: tiktok-ads report daily
 
       - name: Persist state to repo
-        if: always()
+        if: always() && steps.guard.outputs.already_ran != 'true'
         run: |
           git config user.name "tiktok-ads-bot"
           git config user.email "tiktok-ads-bot@github-actions"
@@ -129,7 +162,7 @@ jobs:
           fi
 
       - name: Notify on failure
-        if: failure()
+        if: failure() && steps.guard.outputs.already_ran != 'true'
         run: |
           python - <<'PY'
           import json
