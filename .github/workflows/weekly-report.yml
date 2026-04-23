@@ -8,7 +8,12 @@ name: Weekly TikTok Ads Report
 
 on:
   schedule:
+    # Primary: Sun 21:00 UTC (Mon 05:00 SGT). Backup: Sun 21:20 UTC
+    # (Mon 05:20 SGT) — GH Actions silently drops crons during peak
+    # load, so the backup covers skips. Guard step below short-circuits
+    # the backup when the primary already wrote the weekly snapshot.
     - cron: "0 21 * * 0"
+    - cron: "20 21 * * 0"
   workflow_dispatch: {}
   push:
     branches: [main]
@@ -42,14 +47,49 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Check if snapshot already exists
+        id: guard
+        run: |
+          python - <<'PY'
+          import os
+          from datetime import datetime, timedelta
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+
+          sgt = ZoneInfo("Asia/Singapore")
+          today = datetime.now(sgt).date()
+          days_since_sunday = (today.weekday() + 1) % 7
+          this_sunday = today - timedelta(days=days_since_sunday)
+          if this_sunday >= today:
+              this_sunday -= timedelta(days=7)
+          last_monday = this_sunday - timedelta(days=6)
+          iso_year, iso_week, _ = last_monday.isocalendar()
+          target = f"{iso_year}-W{iso_week:02d}"
+          path = Path(".state/weekly_snapshots") / f"{target}.json"
+          exists = path.exists()
+          print(f"target={target} path={path} exists={exists}")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"already_ran={'true' if exists else 'false'}\n")
+              fh.write(f"target={target}\n")
+          PY
+
+      - name: No-op (snapshot already committed)
+        if: steps.guard.outputs.already_ran == 'true'
+        run: |
+          echo "Weekly snapshot for ${{ steps.guard.outputs.target }} is already on main."
+          echo "Primary cron beat us to it — backup run exiting clean."
+
       - name: Install package
+        if: steps.guard.outputs.already_ran != 'true'
         run: pip install -e .
 
       - name: Initialise state directory
+        if: steps.guard.outputs.already_ran != 'true'
         run: tiktok-ads state init
 
       - name: Token health
         id: health
+        if: steps.guard.outputs.already_ran != 'true'
         run: |
           OUTPUT=$(tiktok-ads health 2>&1) || true
           echo "$OUTPUT"
@@ -61,11 +101,11 @@ jobs:
           fi
 
       - name: Run weekly report
-        if: steps.health.outputs.status != 'expired'
+        if: steps.guard.outputs.already_ran != 'true' && steps.health.outputs.status != 'expired'
         run: tiktok-ads report weekly
 
       - name: Persist state to repo
-        if: always()
+        if: always() && steps.guard.outputs.already_ran != 'true'
         run: |
           git config user.name "tiktok-ads-bot"
           git config user.email "tiktok-ads-bot@github-actions"
@@ -79,7 +119,7 @@ jobs:
           fi
 
       - name: Notify on failure
-        if: failure()
+        if: failure() && steps.guard.outputs.already_ran != 'true'
         run: |
           python - <<'PY'
           import json
