@@ -55,6 +55,17 @@ name: Daily TikTok Ads Report
 #     for a young account.
 #   - bump 4: refresh ad metadata — user reports legacy caption-named
 #     ads no longer in Ads Manager; confirm via fresh /ad/get/ pull
+#   - bump 13: smoke test against new ad account post-suspension.
+#     TIKTOK_ADVERTISER_ID secret updated 2026-05-04 to point at
+#     the replacement advertiser; verifying token scope covers it
+#     via /campaign/get/ in the health step before resuming the
+#     daily cadence. Three possible outcomes recorded by the run:
+#       healthy: ... → token covers new advertiser, daily lands
+#       expired: ... → token expired, re-OAuth needed
+#       error: 4010x ... → advertiser not authorized, re-OAuth
+#         with the new advertiser ticked at consent time
+#     Bot has been silent since 2026-04-23 commit; this is the
+#     reactivation run.
 
 on:
   schedule:
